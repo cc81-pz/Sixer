@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIXER · The daily cricket quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,800;1,800;1,900&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0b1026; --night2:#141a3a; --panel:#18204a; --line:#2a3470;
+  --grass:#1f7a3f; --grass2:#22864a; --rope:#f4f1e8;
+  --ink:#f4f1e8; --dim:#9aa3cc; --pink:#ff4f8b; --lime:#c8f560;
+  --t1:#e8e8e8; --t2:#ffd23f; --t4:#4fb3ff; --t6:#ff4f8b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--night);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;min-height:100%}
+body{background:radial-gradient(120% 60% at 50% 0%,#26306a 0%,var(--night) 60%) fixed}
+button{font:inherit;cursor:pointer;border:0}
+.wrap{max-width:520px;margin:0 auto;padding:16px 16px 40px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+.display{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-weight:900;font-style:italic;letter-spacing:.01em;text-transform:uppercase}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:flex;align-items:center;gap:8px;font-size:24px}
+.logo .ball{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff9cbd,var(--pink) 55%,#a8124a);box-shadow:0 0 12px var(--pink)}
+.hdr-score{font-size:13px;color:var(--dim);text-align:right}
+.hdr-score b{display:block;color:var(--lime);font-size:22px;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-style:italic;font-weight:900}
+.screen{display:none}.screen.on{display:block}
+
+/* home */
+.hero{text-align:center;padding:10px 0 4px}
+.hero h1{font-size:64px;line-height:.9}
+.hero h1 span{color:var(--pink)}
+.hero .tag{color:var(--dim);margin-top:8px;font-size:15px}
+.rules{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:18px 0;font-size:14.5px;line-height:1.5}
+.rules li{list-style:none;padding-left:26px;position:relative;margin:6px 0}
+.rules li::before{content:"";position:absolute;left:4px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--pink)}
+.tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+.tier{border-radius:10px;padding:8px 4px;text-align:center;background:var(--night2);border:1px solid var(--line)}
+.tier b{display:block;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-style:italic;font-weight:900;font-size:24px}
+.tier small{font-size:11px;color:var(--dim)}
+.btn{display:block;width:100%;padding:16px;border-radius:12px;background:var(--lime);color:#14200a;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-style:italic;font-weight:900;font-size:24px;text-transform:uppercase;letter-spacing:.02em;box-shadow:0 0 0 3px rgba(200,245,96,.18)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none;font-size:18px;padding:12px}
+.nets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.netbtn{display:flex;justify-content:space-between;align-items:center;text-align:left;margin-top:10px}
+.netbtn small{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-style:normal;font-weight:500;font-size:13px;opacity:.75;text-transform:none}
+.nets .btn{font-size:16px;padding:10px}
+.sub{color:var(--dim);font-size:13px;text-align:center;margin:18px 0 6px}
+.done-note{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;margin-bottom:10px;font-size:14px;color:var(--dim)}
+
+/* play */
+.over-tracker{display:flex;gap:6px;justify-content:center;margin-bottom:10px}
+.ob{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-weight:600;font-size:13px;color:var(--dim)}
+.ob.now{border-color:var(--ink);color:var(--ink)}
+.ob.r1{background:var(--t1);color:#111;border-color:var(--t1)}
+.ob.r2{background:var(--t2);color:#111;border-color:var(--t2)}
+.ob.r4{background:var(--t4);color:#06223a;border-color:var(--t4)}
+.ob.r6{background:var(--t6);color:#fff;border-color:var(--t6)}
+.ob.rW{background:#3a0f1c;color:#ff8aa8;border-color:#ff4f6b}
+.timer{height:6px;background:var(--night2);border-radius:4px;overflow:hidden;margin-bottom:12px}
+.timer i{display:block;height:100%;background:var(--lime);width:100%;transition:width .2s linear}
+.timer i.low{background:var(--pink)}
+.qmeta{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-bottom:6px}
+.q{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-weight:800;font-size:30px;line-height:1.05;margin-bottom:6px}
+.qs{font-size:11.5px;color:var(--dim);letter-spacing:.04em;text-transform:uppercase;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;margin-bottom:12px}
+.groundbox{position:relative;border-radius:16px;overflow:hidden;background:#070b1c;border:1px solid var(--line)}
+.groundbox svg{display:block;width:100%;height:auto}
+.callout{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) scale(.6);opacity:0;text-align:center;pointer-events:none;transition:all .25s cubic-bezier(.2,1.6,.4,1)}
+.callout.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.callout .big{font-size:76px;line-height:.9;text-shadow:0 4px 0 rgba(0,0,0,.35),0 0 30px currentColor}
+.callout .small{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:12px;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px;margin-top:6px;display:inline-block;color:var(--ink)}
+.miss{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:#3a0f1c;color:#ffb3c4;border:1px solid #ff4f6b;padding:6px 12px;border-radius:8px;font-size:14px;opacity:0;transition:opacity .2s;white-space:nowrap}
+.miss.show{opacity:1}
+.answer-row{display:flex;gap:8px;margin:0 0 8px}
+.answer-row input{flex:1;min-width:0;background:var(--night2);border:1.5px solid var(--line);color:var(--ink);border-radius:12px;padding:14px;font:500 17px "DM Sans",system-ui,sans-serif;outline:none}
+.answer-row input:focus{border-color:var(--lime)}
+.answer-row button{background:var(--pink);color:#fff;border-radius:12px;padding:0 18px;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-style:italic;font-weight:900;font-size:20px;text-transform:uppercase}
+.feedback{margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px;display:none}
+.feedback.on{display:block}
+.feedback .you{font-size:16px;font-weight:700}
+.feedback .note{color:var(--dim);margin-top:2px}
+.misses{min-height:16px;margin-bottom:8px;font-size:12px;color:#ff8aa8;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+
+/* full time */
+.ft-top{text-align:center;padding:8px 0 4px}
+.ft-top .runs{font-size:96px;line-height:.85;color:var(--lime)}
+.ft-top .runs small{font-size:28px;color:var(--dim)}
+.ft-top .rank{font-size:30px;margin-top:6px}
+.ft-top .rankline{color:var(--dim);font-size:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:14px}
+.card h3{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin-bottom:10px;display:flex;justify-content:space-between}
+.legend{display:flex;gap:12px;justify-content:center;font-size:12px;color:var(--dim);margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:10px;height:3px;margin-right:5px;vertical-align:middle;background:var(--c)}
+.ballrow{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.ballrow:first-of-type{border-top:0}
+.ballrow .n{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;color:var(--dim);font-size:13px}
+.ballrow .t{font-size:12px;color:var(--dim)}
+.ballrow .a{font-weight:700;font-size:15px}
+.ballrow .r{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-style:italic;font-weight:900;font-size:26px;text-align:right;min-width:36px}
+.sheet-btn{background:none;color:var(--lime);font-size:12px;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;padding:2px 0;text-decoration:underline;text-underline-offset:3px}
+.sheet{display:none;grid-column:1/-1;font-size:13px;line-height:1.55;background:var(--night2);border-radius:10px;padding:10px 12px}
+.sheet.on{display:block}
+.sheet .tg{margin:4px 0}
+.sheet .tg b{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:11px;margin-right:6px}
+.sheet .hid{color:var(--dim);font-style:italic}
+.table-ranks div{display:flex;justify-content:space-between;padding:5px 0;font-size:14px;border-top:1px dashed var(--line)}
+.table-ranks div:first-child{border-top:0}
+.table-ranks .me{color:var(--lime);font-weight:700}
+.share-pre{background:var(--night2);border-radius:10px;padding:12px;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:13px;white-space:pre-wrap;margin-bottom:10px}
+.share-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wa{background:#25d366;color:#05300f;text-decoration:none;text-align:center}
+.next{text-align:center;color:var(--dim);font-size:14px;margin-top:16px}
+.next b{color:var(--ink);font-family:"IBM Plex Mono"}
+.foot{text-align:center;color:#5d6699;font-size:11px;margin-top:26px;line-height:1.5}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.shake{animation:shake .25s}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo display"><span class="ball"></span>SIXER</div>
+    <div class="hdr-score" id="hdrScore"></div>
+  </header>
+
+  <!-- HOME -->
+  <section class="screen on" id="home">
+    <div class="hero">
+      <h1 class="display">Clear the <span>rope</span></h1>
+      <p class="tag">The daily cricket quiz. One over, six balls.</p>
+    </div>
+    <ul class="rules">
+      <li>Six questions, 20 seconds each. Any correct answer counts.</li>
+      <li>Obvious answers get you a single. The more obscure your answer, the further it goes.</li>
+      <li>Wrong answers are just a play and a miss, so swing again. Run out of time and you're bowled.</li>
+      <div class="tiers">
+        <div class="tier"><b style="color:var(--t1)">1</b><small>Nudged</small></div>
+        <div class="tier"><b style="color:var(--t2)">2</b><small>Pushed</small></div>
+        <div class="tier"><b style="color:var(--t4)">4</b><small>Boundary</small></div>
+        <div class="tier"><b style="color:var(--t6)">6</b><small>Maximum</small></div>
+      </div>
+    </ul>
+    <div id="dailyDone" class="done-note" style="display:none"></div>
+    <button class="btn" id="playDaily" style="display:none">Take guard →</button>
+    <p class="sub" id="netsLabel">In the nets: pick an over. Replay as often as you like.</p>
+    <div id="netsBtns"></div>
+    <p class="foot">Practice version · the daily over comes later<br>Questions checked up to the end of 2025</p>
+  </section>
+
+  <!-- PLAY -->
+  <section class="screen" id="play">
+    <div class="over-tracker" id="tracker"></div>
+    <div class="timer"><i id="timerBar"></i></div>
+    <div class="qmeta"><span id="ballNo">BALL 1/6</span><span id="clock" class="mono">0:20</span></div>
+    <div class="q" id="qText"></div>
+    <div class="qs" id="qSub"></div>
+    <form class="answer-row" id="answerForm" autocomplete="off">
+      <input id="answer" placeholder="Your answer…" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="go">
+      <button type="submit">Swing</button>
+    </form>
+    <div class="misses" id="missList"></div>
+    <div class="groundbox" id="groundbox">
+      <svg id="ground" viewBox="0 0 400 330" aria-hidden="true"></svg>
+      <div class="callout" id="callout"><div class="big display" id="calloutBig"></div><div class="small" id="calloutSmall"></div></div>
+      <div class="miss" id="missToast"></div>
+    </div>
+    <div class="feedback" id="feedback">
+      <div class="you" id="fbYou"></div>
+      <div class="note" id="fbNote"></div>
+      <button class="btn" id="nextBtn" style="margin-top:12px">Next ball →</button>
+    </div>
+  </section>
+
+  <!-- FULL TIME -->
+  <section class="screen" id="ft">
+    <div class="ft-top">
+      <div class="runs display" id="ftRuns"></div>
+      <div class="rank display" id="ftRank"></div>
+      <div class="rankline" id="ftRankLine"></div>
+    </div>
+    <div class="card">
+      <h3><span>Wagon wheel</span><span id="ftOverLabel"></span></h3>
+      <svg id="wagon" viewBox="0 0 400 330"></svg>
+      <div class="legend"><span style="--c:var(--t1)">1</span><span style="--c:var(--t2)">2</span><span style="--c:var(--t4)">4</span><span style="--c:var(--t6)">6</span></div>
+    </div>
+    <div class="card">
+      <h3><span>Scorecard</span><span>Runs</span></h3>
+      <div id="ftBalls"></div>
+    </div>
+    <div class="card">
+      <h3><span>Share with the group</span></h3>
+      <div class="share-pre" id="sharePre"></div>
+      <div id="imgWrap" style="display:none;margin-bottom:10px;text-align:center">
+        <img id="shareImg" alt="Your SIXER scorecard" style="width:100%;border-radius:12px;display:block">
+        <p style="font-size:12px;color:var(--dim);margin-top:6px">Press and hold the image to save it, then post it in the group.</p>
+      </div>
+      <button class="btn" id="imgBtn" style="margin-bottom:8px;font-size:20px;padding:12px">Make share image</button>
+      <div class="share-row">
+        <button class="btn ghost" id="copyBtn">Copy</button>
+        <a class="btn ghost wa" id="waBtn" href="#" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+    </div>
+    <div class="card table-ranks" id="ranksTable"><h3><span>The table</span><span>Runs</span></h3></div>
+    <div class="next" id="nextInfo"></div>
+    <button class="btn ghost" id="homeBtn" style="margin-top:14px">Back to the pavilion</button>
+  </section>
+</div>
+
+<script>
+/* ============ QUESTION BANK ============
+   Each answer: [name, tier, aliases[], note]. Tier 1/2/4/6 is set editorially.
+   people:true lets a unique first name or surname count on its own.  */
+const OVERS = [
+ [ // ---------- OVER A ----------
+  {id:"ipl-teams", q:"Name a franchise that has played in the IPL", s:"Any season 2008–2025 · renamed teams count under either name", people:false, a:[
+   ["Chennai Super Kings",1,["csk","chennai"]],["Mumbai Indians",1,["mi","mumbai"]],
+   ["Royal Challengers Bengaluru",1,["rcb","royal challengers bangalore","bangalore","bengaluru","royal challengers"]],
+   ["Kolkata Knight Riders",1,["kkr","kolkata"]],["Sunrisers Hyderabad",2,["srh","sunrisers","hyderabad"]],
+   ["Rajasthan Royals",2,["rr","rajasthan"]],["Delhi Capitals",2,["dc","delhi daredevils","dd","delhi"],"Delhi Daredevils until 2018"],
+   ["Punjab Kings",2,["pbks","kings xi punjab","kxip","punjab","kings 11 punjab"],"Kings XI Punjab until 2020"],
+   ["Gujarat Titans",2,["gt","titans"]],["Lucknow Super Giants",2,["lsg","lucknow"]],
+   ["Deccan Chargers",4,["deccan","chargers"],"2008–2012"],["Rising Pune Supergiant",4,["rising pune supergiants","rps","pune supergiant","pune supergiants"],"2016–2017"],
+   ["Pune Warriors India",6,["pune warriors","pwi"],"2011–2013"],["Gujarat Lions",6,["lions","gl"],"2016–2017"],
+   ["Kochi Tuskers Kerala",6,["kochi tuskers","kochi","ktk","tuskers"],"One season: 2011"]]},
+  {id:"wc-nations", q:"Name a country that has played at a men's ODI World Cup", s:"Finals tournaments, 1975–2023", a:[
+   ["India",1],["Australia",1],["England",1],["Pakistan",1],["West Indies",2,["windies","wi"]],["Sri Lanka",2,["srilanka"]],
+   ["New Zealand",2,["nz","kiwis"]],["South Africa",2,["sa","rsa"]],["Bangladesh",4],["Zimbabwe",4],["Afghanistan",4],
+   ["Ireland",4],["Netherlands",4,["holland","dutch"]],["Kenya",4,[],"Semi-finalists in 2003"],["Scotland",4],
+   ["Canada",6,[],"1979, 2003, 2007, 2011"],["United Arab Emirates",6,["uae","emirates"],"1996, 2015"],["Namibia",6,[],"2003"],
+   ["Bermuda",6,[],"2007"],["East Africa",6,[],"1975 only"]]},
+  {id:"odi-200", q:"Name a man who has scored an ODI double century", s:"Men's one-day internationals, up to the end of 2025", people:true, a:[
+   ["Rohit Sharma",1,["hitman"],"Three of them, including 264"],["Sachin Tendulkar",1,["sachin","tendulkar"],"The first: 200* in 2010"],
+   ["Virender Sehwag",2,["viru","sehwag"],"219"],["Shubman Gill",2,[],"208"],["Ishan Kishan",2,[],"210"],["Chris Gayle",2,[],"215 at the 2015 World Cup"],
+   ["Glenn Maxwell",2,["maxi"],"201* v Afghanistan, 2023"],["Martin Guptill",4,["guppy"],"237*"],["Fakhar Zaman",4,[],"210*"],
+   ["Pathum Nissanka",6,[],"210* v Afghanistan, 2024"]]},
+  {id:"orange-cap", q:"Name a player who has won the IPL Orange Cap", s:"Leading run-scorer of a season, 2008–2025", people:true, a:[
+   ["Virat Kohli",1,["kohli","virat"],"2016, 2024"],["David Warner",1,[],"2015, 2017, 2019"],["Chris Gayle",2,[],"2011, 2012"],
+   ["Shubman Gill",2,[],"2023"],["KL Rahul",2,["kl","lokesh rahul"],"2020"],["Sachin Tendulkar",2,["sachin"],"2010"],["Jos Buttler",2,[],"2022"],
+   ["Ruturaj Gaikwad",4,["ruturaj"],"2021"],["Sai Sudharsan",4,["sudharsan","sai sudarshan"],"2025"],["Kane Williamson",4,[],"2018"],
+   ["Robin Uthappa",4,[],"2014"],["Matthew Hayden",4,["haydos","matt hayden"],"2009"],["Michael Hussey",6,["mike hussey","mr cricket","hussey"],"2013"],
+   ["Shaun Marsh",6,[],"The first: 2008"]]},
+  {id:"triple", q:"Name a man who has scored a Test triple century", s:"300 or more in a Test innings, up to the end of 2025", people:true, a:[
+   ["Brian Lara",1,[],"375 and 400*"],["Virender Sehwag",1,["viru"],"309 and 319"],["Don Bradman",1,["bradman","the don","donald bradman"],"334 and 304"],
+   ["David Warner",2,[],"335*"],["Matthew Hayden",2,["matt hayden"],"380"],["Chris Gayle",2,[],"317 and 333"],["Garry Sobers",2,["gary sobers","sobers"],"365*"],
+   ["Mahela Jayawardene",2,["mahela"],"374"],["Inzamam-ul-Haq",2,["inzamam","inzi","inzamam ul haq"],"329"],["Harry Brook",2,[],"317 at Multan, 2024"],
+   ["Karun Nair",4,[],"303*, then dropped"],["Kumar Sangakkara",4,["sanga"],"319"],["Michael Clarke",4,["pup"],"329*"],["Wiaan Mulder",4,[],"367*, declared on himself, 2025"],
+   ["Sanath Jayasuriya",4,[],"340"],["Graham Gooch",4,[],"333"],["Len Hutton",4,[],"364"],["Wally Hammond",4,[],"336*"],["Hanif Mohammad",4,["hanif"],"337"],
+   ["Younis Khan",4,["younis","younus khan"],"313"],["Brendon McCullum",4,["baz","mccullum"],"302"],["Hashim Amla",4,[],"311*"],
+   ["Azhar Ali",6,["azhar"],"302*"],["Mark Taylor",6,["tubby"],"334*, declared level with Bradman"],["Bob Simpson",6,["bobby simpson"],"311"],
+   ["John Edrich",6,[],"310*"],["Bob Cowper",6,[],"307"],["Lawrence Rowe",6,[],"302"],["Andy Sandham",6,[],"325, the first (1930)"]]},
+  {id:"six-sixes", q:"Name a batter who has hit six sixes in an over in international cricket", s:"Men's ODIs and T20Is", people:true, a:[
+   ["Yuvraj Singh",1,["yuvi","yuvraj"],"Off Stuart Broad, 2007 T20 World Cup"],["Herschelle Gibbs",2,[],"v Netherlands, 2007 World Cup"],
+   ["Kieron Pollard",2,[],"v Sri Lanka, 2021"],["Jaskaran Malhotra",6,[],"USA v PNG, 2021"],["Dipendra Singh Airee",6,["dipendra airee","airee","dipendra"],"Nepal v Qatar, 2024"],
+   ["Darius Visser",6,[],"Samoa v Vanuatu, 2024"]]}
+ ],
+ [ // ---------- OVER B ----------
+  {id:"test-nations", q:"Name a country that has played men's Test cricket", s:"The 12 Test nations · the 2005 World XI doesn't count", a:[
+   ["India",1],["England",1],["Australia",1],["Pakistan",2],["South Africa",2,["sa","rsa"]],["New Zealand",2,["nz"]],["West Indies",2,["windies","wi"]],
+   ["Sri Lanka",2],["Bangladesh",4],["Zimbabwe",4],["Afghanistan",4],["Ireland",6,[],"First Test 2018, v Pakistan"]]},
+  {id:"purple-cap", q:"Name a bowler who has won the IPL Purple Cap", s:"Leading wicket-taker of a season, 2008–2025", people:true, a:[
+   ["Yuzvendra Chahal",1,["yuzi","chahal"],"2022"],["Bhuvneshwar Kumar",1,["bhuvi","bhuvneshwar"],"2016, 2017"],["Dwayne Bravo",1,["dj bravo","bravo"],"2013, 2015"],
+   ["Harshal Patel",2,[],"2021, 2024"],["Lasith Malinga",2,["malinga"],"2011"],["Mohammed Shami",2,["shami"],"2023"],["Kagiso Rabada",2,["kg rabada"],"2020"],
+   ["Prasidh Krishna",4,["prasidh"],"2025"],["Imran Tahir",4,["tahir"],"2019"],["Mohit Sharma",4,[],"2014"],["Morne Morkel",4,["morkel"],"2012"],
+   ["Andrew Tye",6,["aj tye","tye"],"2018"],["Pragyan Ojha",6,["ojha"],"2010"],["RP Singh",6,["rudra pratap singh","r p singh"],"2009"],["Sohail Tanvir",6,["tanvir"],"The first: 2008"]]},
+  {id:"wc-captains", q:"Name a captain who has lifted the men's ODI World Cup", s:"Winning captains, 1975–2023", people:true, a:[
+   ["MS Dhoni",1,["dhoni","msd","mahi","mahendra singh dhoni"],"2011"],["Kapil Dev",1,["kapil","dev"],"1983"],["Ricky Ponting",2,["punter"],"2003, 2007"],
+   ["Pat Cummins",2,[],"2023"],["Imran Khan",2,[],"1992"],["Eoin Morgan",4,[],"2019"],["Steve Waugh",4,["stephen waugh"],"1999"],
+   ["Arjuna Ranatunga",4,[],"1996"],["Clive Lloyd",4,[],"1975, 1979"],["Michael Clarke",4,["pup"],"2015"],["Allan Border",6,["ab"],"1987"]]},
+  {id:"t20wc-nations", q:"Name a country that has played at a men's T20 World Cup", s:"Tournaments 2007–2024", a:[
+   ["India",1],["Pakistan",1],["Australia",1],["England",1],["South Africa",2,["sa"]],["New Zealand",2,["nz"]],["Sri Lanka",2],
+   ["West Indies",2,["windies","wi"]],["Afghanistan",2],["Bangladesh",2],["Zimbabwe",4],["Ireland",4],["Netherlands",4,["holland"]],["Scotland",4],
+   ["United States",4,["usa","america","united states of america","us"],"2024, beat Pakistan"],["Nepal",4],["Namibia",4],
+   ["Kenya",6,[],"2007"],["United Arab Emirates",6,["uae"],"2014, 2022"],["Hong Kong",6,[],"2014, 2016"],["Oman",6],
+   ["Papua New Guinea",6,["png"]],["Canada",6,[],"2024"],["Uganda",6,[],"2024"]]},
+  {id:"wc-final-grounds", q:"Name a ground that has hosted a men's ODI World Cup final", s:"Every final, 1975–2023", a:[
+   ["Lord's",1,["lords","lords cricket ground"],"1975, 79, 83, 99, 2019"],["Narendra Modi Stadium",1,["ahmedabad","motera","narendra modi"],"2023"],
+   ["Wankhede Stadium",1,["wankhede","mumbai"],"2011"],["Eden Gardens",2,["eden","kolkata"],"1987"],["Melbourne Cricket Ground",2,["mcg","melbourne"],"1992, 2015"],
+   ["Gaddafi Stadium",4,["gaddafi","lahore"],"1996"],["Wanderers",4,["wanderers stadium","johannesburg","the wanderers"],"2003"],
+   ["Kensington Oval",6,["kensington","barbados","bridgetown"],"2007"]]},
+  {id:"ipl-finalists", q:"Name a team that has played in an IPL final", s:"Winners and runners-up, 2008–2025", a:[
+   ["Chennai Super Kings",1,["csk","chennai"]],["Mumbai Indians",1,["mi","mumbai"]],["Kolkata Knight Riders",1,["kkr","kolkata"]],
+   ["Royal Challengers Bengaluru",1,["rcb","royal challengers bangalore","bangalore","bengaluru"]],["Sunrisers Hyderabad",2,["srh","sunrisers"]],
+   ["Gujarat Titans",2,["gt","titans"]],["Rajasthan Royals",2,["rr","rajasthan"]],["Punjab Kings",2,["pbks","kings xi punjab","kxip","punjab"],"2014, 2025"],
+   ["Delhi Capitals",4,["dc","delhi"],"2020"],["Deccan Chargers",4,["deccan"],"Champions in 2009"],["Rising Pune Supergiant",6,["rps","rising pune supergiants","pune supergiant"],"Lost the 2017 final by one run"]]}
+ ],
+ [ // ---------- OVER C ----------
+  {id:"wc-pot", q:"Name a Player of the Tournament at a men's ODI World Cup", s:"The award began in 1992 · up to 2023", people:true, a:[
+   ["Sachin Tendulkar",1,["sachin"],"2003"],["Virat Kohli",1,["virat","kohli"],"2023"],["Yuvraj Singh",1,["yuvi","yuvraj"],"2011"],
+   ["Mitchell Starc",2,[],"2015"],["Kane Williamson",2,[],"2019"],["Glenn McGrath",4,["mcgrath"],"2007"],["Sanath Jayasuriya",4,[],"1996"],
+   ["Lance Klusener",4,["zulu"],"1999"],["Martin Crowe",6,[],"1992"]]},
+  {id:"india-test-captains", q:"Name a man who has captained India in a Test", s:"Every men's Test captain, 1932 to the end of 2025", people:true, a:[
+   ["Virat Kohli",1,["virat","kohli"]],["MS Dhoni",1,["dhoni","msd","mahi"]],["Sourav Ganguly",1,["dada","ganguly"]],["Rohit Sharma",1,["rohit"]],
+   ["Rahul Dravid",2,["dravid"]],["Sachin Tendulkar",2,["sachin"]],["Shubman Gill",2,[]],["Sunil Gavaskar",2,["sunny gavaskar"]],["Kapil Dev",2,["kapil"]],
+   ["Mohammad Azharuddin",2,["azhar","azharuddin"]],["Anil Kumble",2,[]],["Ajinkya Rahane",2,["jinks"],"Led the 2021 Gabba win"],
+   ["Jasprit Bumrah",4,["boom boom"]],["KL Rahul",4,["kl"]],["Virender Sehwag",4,["viru"]],["Rishabh Pant",4,[],"Guwahati, 2025"],
+   ["Ravi Shastri",4,[]],["Kris Srikkanth",4,["srikkanth","srikanth","cheeka"]],["Dilip Vengsarkar",4,[]],
+   ["Mansur Ali Khan Pataudi",4,["tiger pataudi","pataudi","mak pataudi","tiger","nawab of pataudi"]],["Bishan Bedi",4,["bishan singh bedi"]],
+   ["Ajit Wadekar",4,[]],["Lala Amarnath",4,["amarnath"]],["CK Nayudu",4,["nayudu","c k nayudu"],"The first, 1932"],["Vinoo Mankad",4,["mankad"]],
+   ["Gundappa Viswanath",6,["gr viswanath","vishy","viswanath"]],["Srinivas Venkataraghavan",6,["s venkataraghavan","venkat","venkataraghavan"]],
+   ["Vijay Hazare",6,["hazare"]],["Polly Umrigar",6,["umrigar"]],["Nari Contractor",6,[]],["Chandu Borde",6,[],"One Test, 1967"],
+   ["Ghulam Ahmed",6,[]],["Hemu Adhikari",6,[]],["Datta Gaekwad",6,["dattajirao gaekwad"]],["Pankaj Roy",6,[]],["GS Ramchand",6,["ramchand","gulabrai ramchand"]],
+   ["Iftikhar Ali Khan Pataudi",6,["iftikhar pataudi","iftikhar"],"Tiger's father, 1946"],["Maharajkumar of Vizianagram",6,["vizzy","vizianagram"],"1936 tour"]]},
+  {id:"500-wkts", q:"Name a bowler with 500 or more Test wickets", s:"Men's Tests, up to the end of 2025", people:true, a:[
+   ["Muttiah Muralitharan",1,["murali","muralitharan"],"800"],["Shane Warne",1,["warnie"],"708"],["Anil Kumble",1,[],"619"],["Ravichandran Ashwin",1,["ashwin","r ashwin","ash"],"537"],
+   ["James Anderson",2,["jimmy","jimmy anderson"],"704"],["Stuart Broad",2,[],"604"],["Glenn McGrath",2,["mcgrath","pigeon"],"563"],["Nathan Lyon",2,["gaz"]],
+   ["Courtney Walsh",6,[],"519, the first to 500"]]},
+  {id:"eng-grounds", q:"Name a ground in England or Wales that has hosted a men's Test", s:"Every venue, 1880 to the end of 2025", a:[
+   ["Lord's",1,["lords"]],["The Oval",1,["oval","kennington oval","kia oval"]],["Old Trafford",2,["manchester"]],["Edgbaston",2,["birmingham"]],
+   ["Headingley",2,["leeds"]],["Trent Bridge",2,["nottingham"]],["Rose Bowl",4,["ageas bowl","utilita bowl","southampton","hampshire bowl"]],
+   ["Sophia Gardens",4,["cardiff","swalec stadium"],"Cardiff"],["Riverside Ground",6,["riverside","chester le street","durham","emirates riverside"],"Chester-le-Street"],
+   ["Bramall Lane",6,["sheffield"],"One Test, 1902"]]},
+  {id:"ipl-final-grounds", q:"Name a stadium that has hosted an IPL final", s:"Every final, 2008–2025", a:[
+   ["Narendra Modi Stadium",1,["ahmedabad","motera","narendra modi"],"2022, 2023, 2025"],["Wankhede Stadium",1,["wankhede","mumbai"],"2018"],
+   ["Eden Gardens",1,["eden","kolkata"],"2013, 2015"],["M. Chinnaswamy Stadium",2,["chinnaswamy","bengaluru","bangalore","m chinnaswamy"],"2014, 2016"],
+   ["MA Chidambaram Stadium",2,["chepauk","chidambaram","chennai","ma chidambaram"],"2011, 2012, 2024"],
+   ["Rajiv Gandhi International Stadium",4,["uppal","hyderabad","rajiv gandhi"],"2017, 2019"],["Dubai International Stadium",4,["dubai","dubai international cricket stadium"],"2020, 2021"],
+   ["DY Patil Stadium",4,["dy patil","navi mumbai","d y patil"],"2008, 2010"],["Wanderers",6,["johannesburg","wanderers stadium","the wanderers"],"2009, in South Africa"]]},
+  {id:"wc-hosts", q:"Name a country that has hosted men's ODI World Cup matches", s:"Hosts and co-hosts, 1975–2023", a:[
+   ["England",1],["India",1],["Australia",2],["Sri Lanka",2],["Pakistan",2],["New Zealand",2,["nz"]],["South Africa",2,["sa"]],
+   ["West Indies",2,["windies","caribbean","barbados","jamaica","antigua","trinidad","guyana"],"2007"],["Bangladesh",4,[],"2011"],["Zimbabwe",4,[],"2003"],
+   ["Kenya",6,[],"2003"],["Wales",6,[],"1983, 1999, 2019"],["Scotland",6,[],"1999"],["Ireland",6,[],"1999"],["Netherlands",6,["holland"],"1999"]]}
+ ]
+];
+
+/* ============ MATCHING ============ */
+function norm(s){
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/&/g,' and ').replace(/['’]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()
+    .replace(/^the /,'').replace(/\b([a-z]) (?=[a-z]\b)/g,'$1');
+}
+function lev(a,b){
+  if(Math.abs(a.length-b.length)>2) return 9;
+  const d=Array.from({length:a.length+1},(_,i)=>[i]);
+  for(let j=1;j<=b.length;j++) d[0][j]=j;
+  for(let i=1;i<=a.length;i++) for(let j=1;j<=b.length;j++)
+  { d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+    if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]) d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1); }
+  return d[a.length][b.length];
+}
+function buildIndex(q){
+  const strong=new Map(), weak=new Map(), owners=new Map();
+  if(q.people) q.a.forEach((ans,i)=>norm(ans[0]).split(' ').forEach(t=>{ if(!owners.has(t)) owners.set(t,new Set()); owners.get(t).add(i); }));
+  q.a.forEach((ans,i)=>{
+    [ans[0],...(ans[2]||[])].forEach(k=>strong.set(norm(k),i));
+    if(q.people){
+      const toks=norm(ans[0]).split(' ');
+      [toks[0],toks[toks.length-1]].forEach(t=>{
+        if(t.length<4 || owners.get(t).size>1) return;
+        weak.set(t,i);
+      });
+    }
+  });
+  weak.forEach((v,k)=>{ if(!strong.has(k) && v>=0) strong.set(k,v); });
+  return strong;
+}
+function match(q,input){
+  const k=norm(input); if(!k) return -1;
+  const idx=q._idx||(q._idx=buildIndex(q));
+  if(idx.has(k)) return idx.get(k);
+  const tol = k.length>=9?2 : k.length>=5?1 : 0;
+  if(!tol) return -1;
+  let best=99, hits=new Set();
+  idx.forEach((i,key)=>{ const d=lev(k,key); if(d<best){best=d;hits=new Set([i]);} else if(d===best) hits.add(i); });
+  return best<=tol && hits.size===1 ? [...hits][0] : -1;
+}
+
+/* ============ DAY / STORAGE ============ */
+const LAUNCH=new Date(2026,10,16);
+function dayNum(){ const t=new Date(); t.setHours(0,0,0,0); return Math.floor((t-LAUNCH)/864e5)+1; }
+const OVER_NO=Math.max(1,dayNum());
+const TODAY_IDX=(OVER_NO-1)%OVERS.length;
+const store={get(k,d){try{const v=localStorage.getItem('sixer:'+k);return v?JSON.parse(v):d}catch(e){return d}},
+             set(k,v){try{localStorage.setItem('sixer:'+k,JSON.stringify(v))}catch(e){}}};
+const DAILY_ON = false; // flip on at launch: one over a day, streaks, hidden sixes
+const SHARE_URL = /claude/.test(location.hostname) || !/^https?:/.test(location.protocol) ? "" : location.origin + location.pathname;
+
+/* ============ GROUND SVG ============ */
+const CX=200, CY=172, ROPE=128;
+function groundSVG(withStands=true){
+  let s=`<defs>
+    <radialGradient id="fl" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#2a9a52"/><stop offset="1" stop-color="#155d30"/></radialGradient>
+    <pattern id="mow" width="22" height="22" patternUnits="userSpaceOnUse"><rect width="11" height="22" fill="rgba(255,255,255,.035)"/></pattern>
+    <filter id="glow"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="400" height="330" fill="#070b1c"/>`;
+  if(withStands){
+    s+=`<ellipse cx="${CX}" cy="${CY}" rx="196" ry="160" fill="#10173a"/>`;
+    let dots=''; let seed=7; const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+    for(let i=0;i<420;i++){const a=rnd()*Math.PI*2, r=0.84+rnd()*0.15;
+      const x=CX+Math.cos(a)*196*r, y=CY+Math.sin(a)*160*r;
+      const c=['#ff4f8b','#4fb3ff','#ffd23f','#f4f1e8','#ff9a3c','#7cf0c0'][Math.floor(rnd()*6)];
+      dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.3" fill="${c}" opacity="${(.35+rnd()*.5).toFixed(2)}"/>`;}
+    s+=dots;
+    [[38,28],[362,28],[38,316],[362,316]].forEach(([x,y])=>{s+=`<g filter="url(#glow)"><rect x="${x-10}" y="${y-5}" width="20" height="8" rx="2" fill="#fff8d6"/></g>`});
+  }
+  s+=`<ellipse cx="${CX}" cy="${CY}" rx="150" ry="128" fill="url(#fl)"/>
+  <ellipse cx="${CX}" cy="${CY}" rx="150" ry="128" fill="url(#mow)"/>
+  <ellipse cx="${CX}" cy="${CY}" rx="${ROPE*1.1}" ry="${ROPE*0.94}" fill="none" stroke="var(--rope)" stroke-width="2.2" opacity=".9" id="rope"/>
+  <ellipse cx="${CX}" cy="${CY}" rx="70" ry="60" fill="none" stroke="#fff" stroke-width="1" stroke-dasharray="3 5" opacity=".35"/>
+  <rect x="${CX-6}" y="${CY-26}" width="12" height="52" rx="2" fill="#c9b07a"/>
+  <line x1="${CX-6}" y1="${CY-18}" x2="${CX+6}" y2="${CY-18}" stroke="#fff" stroke-width=".8"/>
+  <line x1="${CX-6}" y1="${CY+18}" x2="${CX+6}" y2="${CY+18}" stroke="#fff" stroke-width=".8"/>`;
+  return s;
+}
+// distance as fraction of rope by runs
+const DIST={1:.32,2:.62,4:.99,6:1.24};
+const COL={1:'var(--t1)',2:'var(--t2)',4:'var(--t4)',6:'var(--t6)'};
+function angleFor(str){ let h=0; for(const c of str) h=(h*31+c.charCodeAt(0))>>>0; return (h%360)*Math.PI/180; }
+function endPoint(runs,ang){ const f=DIST[runs]; return [CX+Math.cos(ang)*ROPE*1.1*f, CY+Math.sin(ang)*ROPE*0.94*f]; }
+
+/* ============ GAME ============ */
+const $=id=>document.getElementById(id);
+let G=null, tick=null;
+const BALL_SECS=20;
+
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id)); window.scrollTo(0,0); }
+
+function renderHome(){
+  if(!DAILY_ON){
+    $('hdrScore').innerHTML='';
+    const nb=$('netsBtns'); nb.innerHTML='';
+    OVERS.forEach((ov,i)=>{ const best=store.get('best-'+i,null); const b=document.createElement('button');
+      b.className='btn netbtn'+(i?' ghost':''); b.innerHTML=`<span>Over ${'ABC'[i]} →</span><small>${best!==null?'Best '+best+'/36':ov.length+' balls'}</small>`;
+      b.onclick=()=>start('nets',i); nb.appendChild(b); });
+    return;
+  }
+  $('playDaily').style.display='block'; $('netsBtns').className='nets';
+  $('netsLabel').textContent='Nets: play the other overs, which don\'t count towards your streak';
+  const done=store.get('day-'+OVER_NO,null);
+  $('playDaily').textContent = done ? 'See today\'s scorecard →' : `Take guard: Over #${OVER_NO} →`;
+  const dn=$('dailyDone');
+  if(done){ dn.style.display='block'; dn.innerHTML=`Today's over is done: <b style="color:var(--lime)">${done.total} runs</b>. The next over is out at midnight.`; }
+  const streak=store.get('streak',{n:0,last:0});
+  $('hdrScore').innerHTML = streak.n ? `STREAK<b>🔥 ${streak.n}</b>` : '';
+  const nb=$('netsBtns'); nb.innerHTML='';
+  OVERS.forEach((_,i)=>{ const b=document.createElement('button'); b.className='btn ghost'; b.textContent='Over '+'ABC'[i]+(i===TODAY_IDX?' (today)':'');
+    b.onclick=()=>start('nets',i); nb.appendChild(b); });
+}
+
+function start(mode,overIdx){
+  if(mode==='daily'){ const done=store.get('day-'+OVER_NO,null); if(done){ G=done; renderFT(); return; } }
+  G={mode,overIdx,overNo:OVER_NO,ball:0,results:[],total:0};
+  show('play'); startBall();
+}
+
+function renderTracker(){
+  const t=$('tracker'); t.innerHTML='';
+  for(let i=0;i<6;i++){ const r=G.results[i]; const d=document.createElement('div');
+    d.className='ob'+(r?(r.runs?' r'+r.runs:' rW'):'')+(i===G.ball&&!r?' now':'');
+    d.textContent=r?(r.runs?r.runs:'W'):(i+1); t.appendChild(d); }
+  $('hdrScore').innerHTML=`RUNS<b>${G.total}</b>`;
+}
+
+function startBall(){
+  const q=OVERS[G.overIdx][G.ball];
+  G.misses=[]; G.locked=false;
+  $('ballNo').textContent=`BALL ${G.ball+1}/6 · ${G.mode==='daily'?'OVER #'+G.overNo:'NETS · OVER '+'ABC'[G.overIdx]}`;
+  $('qText').textContent=q.q; $('qSub').textContent=q.s;
+  $('ground').innerHTML=groundSVG()+`<circle id="pball" cx="${CX}" cy="${CY+20}" r="4.5" fill="#ff4f8b" filter="url(#glow)"/>`;
+  $('callout').classList.remove('show'); $('feedback').classList.remove('on'); $('missList').textContent='';
+  $('answerForm').style.display='flex';
+  const inp=$('answer'); inp.value=''; inp.disabled=false; inp.focus();
+  renderTracker();
+  G.deadline=Date.now()+BALL_SECS*1000;
+  clearInterval(tick); tick=setInterval(updTimer,100); updTimer();
+}
+
+function updTimer(){
+  const left=Math.max(0,G.deadline-Date.now()), f=left/(BALL_SECS*1000);
+  const bar=$('timerBar'); bar.style.width=(f*100)+'%'; bar.classList.toggle('low',f<.3);
+  const s=Math.ceil(left/1000); $('clock').textContent='0:'+String(s).padStart(2,'0');
+  if(left<=0 && !G.locked) finishBall(null);
+}
+
+$('answerForm').addEventListener('submit',e=>{
+  e.preventDefault(); if(G.locked) return;
+  const inp=$('answer'), v=inp.value.trim(); if(!v) return;
+  const q=OVERS[G.overIdx][G.ball]; const i=match(q,v);
+  if(i<0){
+    G.misses.push(v); inp.value='';
+    const t=$('missToast'); t.textContent='✗ '+v+': play and a miss'; t.classList.add('show');
+    clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1300);
+    $('groundbox').classList.remove('shake'); void $('groundbox').offsetWidth; $('groundbox').classList.add('shake');
+    $('missList').textContent='Missed: '+G.misses.join(' · ');
+    return;
+  }
+  finishBall(i);
+});
+
+function finishBall(i){
+  G.locked=true; clearInterval(tick);
+  const q=OVERS[G.overIdx][G.ball];
+  const inp=$('answer'); inp.blur(); inp.disabled=true; $('answerForm').style.display='none';
+  setTimeout(()=>$('groundbox').scrollIntoView({behavior:'smooth',block:'start'}),60);
+  let r;
+  if(i===null){ r={qid:q.id,answer:null,runs:0,ang:0}; }
+  else { const a=q.a[i]; r={qid:q.id,answer:a[0],runs:a[1],note:a[3]||'',ang:angleFor(a[0]+q.id)}; }
+  G.results[G.ball]=r; G.total+=r.runs;
+  animateBall(r);
+  const big=$('calloutBig'), small=$('calloutSmall');
+  if(!r.runs){ big.textContent='Bowled!'; big.style.color='#ff6b8b'; small.textContent='Out of time · 0 runs'; }
+  else { const lbl={1:'Single',2:'Two',4:'Four!',6:'Six!'}[r.runs]; big.textContent=lbl; big.style.color=COL[r.runs];
+    small.textContent={1:'An obvious one · +1',2:'Decent · +2',4:'Found the rope · +4',6:'Out of the ground · +6'}[r.runs]; }
+  setTimeout(()=>$('callout').classList.add('show'), r.runs===6?650:r.runs?420:150);
+  $('fbYou').innerHTML = r.answer ? `You said <span style="color:${COL[r.runs]}">${r.answer}</span>` : 'No answer in time.';
+  const tierCount=q.a.filter(a=>a[1]===6).length;
+  $('fbNote').textContent = (r.note? r.note+' · ' : '') + `${q.a.length} correct answers, ${tierCount} of them worth a six.`;
+  $('nextBtn').textContent = G.ball===5 ? 'Close the innings →' : 'Next ball →';
+  setTimeout(()=>{ $('feedback').classList.add('on'); renderTracker(); $('nextBtn').focus(); }, 500);
+}
+
+function animateBall(r){
+  const b=document.getElementById('pball'); if(!b) return;
+  if(!r.runs){ b.setAttribute('cy',CY-22); return; }
+  const [ex,ey]=endPoint(r.runs,r.ang); const sx=CX, sy=CY+20; const dur= r.runs===6?900:r.runs===4?800:550;
+  const t0=performance.now();
+  const trail=document.createElementNS('http://www.w3.org/2000/svg','path');
+  trail.setAttribute('fill','none'); trail.setAttribute('stroke',getComputedStyle(document.documentElement).getPropertyValue('--t'+r.runs)); trail.setAttribute('stroke-width','2'); trail.setAttribute('stroke-linecap','round'); trail.setAttribute('opacity','.85');
+  b.parentNode.insertBefore(trail,b);
+  let d=`M${sx},${sy}`;
+  (function step(now){
+    let t=Math.min(1,(now-t0)/dur); const e= r.runs>=4 ? 1-Math.pow(1-t,2.2) : 1-Math.pow(1-t,3);
+    const x=sx+(ex-sx)*e, y=sy+(ey-sy)*e;
+    const lift = r.runs===6 ? Math.sin(Math.PI*t)*40 : 0;
+    b.setAttribute('cx',x); b.setAttribute('cy',y-lift); b.setAttribute('r', r.runs===6 ? 4.5+Math.sin(Math.PI*t)*4 : 4.5);
+    d+=` L${x.toFixed(1)},${(y-lift).toFixed(1)}`; trail.setAttribute('d',d);
+    if(t<1) requestAnimationFrame(step); else celebrate(r.runs,x,y);
+  })(t0);
+}
+
+function celebrate(runs,x,y){
+  const svg=$('ground'); const NS='http://www.w3.org/2000/svg';
+  if(runs===4){ const rope=document.getElementById('rope'); if(rope){ rope.style.transition='stroke .15s, stroke-width .15s'; rope.style.stroke='var(--t4)'; rope.style.strokeWidth='5';
+      setTimeout(()=>{rope.style.stroke='';rope.style.strokeWidth='';},700);} }
+  if(runs!==6) return;
+  const cols=['#ff4f8b','#ffd23f','#4fb3ff','#c8f560','#f4f1e8','#ff9a3c'];
+  const parts=[]; for(let i=0;i<34;i++){ const c=document.createElementNS(NS,'rect'); const a=Math.random()*Math.PI*2, v=1.5+Math.random()*3.5;
+    c.setAttribute('width',3+Math.random()*3); c.setAttribute('height',2+Math.random()*3); c.setAttribute('fill',cols[i%cols.length]);
+    svg.appendChild(c); parts.push({c,x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-2,r:Math.random()*360}); }
+  const flash=document.createElementNS(NS,'rect'); flash.setAttribute('width',400); flash.setAttribute('height',330); flash.setAttribute('fill','#fff'); flash.setAttribute('opacity','.25'); svg.appendChild(flash);
+  const t0=performance.now();
+  (function f(now){ const t=(now-t0)/1000; flash.setAttribute('opacity',Math.max(0,.25-t*.9));
+    parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=.12; p.r+=8; p.c.setAttribute('x',p.x); p.c.setAttribute('y',p.y);
+      p.c.setAttribute('transform',`rotate(${p.r} ${p.x} ${p.y})`); p.c.setAttribute('opacity',Math.max(0,1-t/1.4)); });
+    if(t<1.4) requestAnimationFrame(f); else { parts.forEach(p=>p.c.remove()); flash.remove(); } })(t0);
+}
+
+function shareImage(rk){
+  const W=1080,H=1350,c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
+  const g=x.createRadialGradient(W/2,0,50,W/2,0,H); g.addColorStop(0,'#26306a'); g.addColorStop(.6,'#0b1026'); x.fillStyle=g; x.fillRect(0,0,W,H);
+  const D='italic 900 ', F=' "Barlow Condensed","Arial Narrow",Arial,sans-serif', M=' "IBM Plex Mono",ui-monospace,monospace';
+  const cx=W/2, cy=900, sx=1.75;
+  x.fillStyle='#10173a'; x.beginPath(); x.ellipse(cx,cy,196*sx,160*sx,0,0,7); x.fill();
+  const fg=x.createRadialGradient(cx,cy-40,20,cx,cy,150*sx); fg.addColorStop(0,'#2a9a52'); fg.addColorStop(1,'#155d30');
+  x.fillStyle=fg; x.beginPath(); x.ellipse(cx,cy,150*sx,128*sx,0,0,7); x.fill();
+  x.strokeStyle='#f4f1e8'; x.lineWidth=5; x.beginPath(); x.ellipse(cx,cy,ROPE*1.1*sx,ROPE*.94*sx,0,0,7); x.stroke();
+  x.fillStyle='#c9b07a'; x.fillRect(cx-10,cy-45,20,90);
+  const C={1:'#e8e8e8',2:'#ffd23f',4:'#4fb3ff',6:'#ff4f8b'};
+  G.results.forEach(r=>{ if(!r.runs) return; const [ex,ey]=endPoint(r.runs,r.ang); const px=cx+(ex-CX)*sx, py=cy+(ey-CY)*sx;
+    x.strokeStyle=C[r.runs]; x.lineWidth=r.runs>=4?10:7; x.lineCap='round'; x.beginPath(); x.moveTo(cx,cy); x.lineTo(px,py); x.stroke();
+    x.fillStyle=C[r.runs]; x.beginPath(); x.arc(px,py,13,0,7); x.fill(); });
+  x.textAlign='left'; x.fillStyle='#ff4f8b'; x.beginPath(); x.arc(92,104,22,0,7); x.fill();
+  x.fillStyle='#f4f1e8'; x.font=D+'64px'+F; x.fillText('SIXER',130,126);
+  x.textAlign='right'; x.fillStyle='#9aa3cc'; x.font='600 30px'+M;
+  x.fillText(G.mode==='daily'?'OVER #'+G.overNo:'NETS · OVER '+'ABC'[G.overIdx], W-70,118);
+  x.textAlign='center'; x.fillStyle='#c8f560'; x.font=D+'230px'+F; x.fillText(G.total,W/2-40,380);
+  x.fillStyle='#9aa3cc'; x.font=D+'64px'+F; x.textAlign='left'; x.fillText('/36',W/2-40+x.measureText('').width+ (G.total>9?120:70),380);
+  x.textAlign='center'; x.fillStyle='#f4f1e8'; x.font=D+'78px'+F; x.fillText(rk[1].toUpperCase(),W/2,470);
+  G.results.forEach((r,i)=>{ const bx=W/2+(i-2.5)*120, by=570; x.beginPath(); x.arc(bx,by,44,0,7);
+    x.fillStyle=r.runs?C[r.runs]:'#3a0f1c'; x.fill(); if(!r.runs){x.strokeStyle='#ff4f6b';x.lineWidth=4;x.stroke();}
+    x.fillStyle=r.runs===6?'#fff':r.runs?'#111':'#ff8aa8'; x.font='600 40px'+M; x.fillText(r.runs||'W',bx,by+14); });
+  x.fillStyle='#9aa3cc'; x.font='500 34px'+M; x.fillText('Can you beat it?',W/2,1300);
+  return c.toDataURL('image/png');
+}
+
+$('nextBtn').onclick=()=>{
+  if(G.ball<5){ G.ball++; startBall(); return; }
+  G.finished=true;
+  if(G.mode==='nets'){ const k='best-'+G.overIdx; G.newBest = G.total > store.get(k,-1); if(G.newBest) store.set(k,G.total); }
+  if(G.mode==='daily'){
+    store.set('day-'+OVER_NO,G);
+    const st=store.get('streak',{n:0,last:0});
+    store.set('streak',{n: st.last===OVER_NO-1 ? st.n+1 : (st.last===OVER_NO? st.n : 1), last:OVER_NO});
+  }
+  renderFT();
+};
+
+const RANKS=[[30,'Hall of Famer','Frankly absurd range.'],[22,'Test regular','Proper cricket brain.'],[14,'IPL squad player','You know your game.'],[7,'Ranji grinder','Solid, if unspectacular.'],[0,'Gully cricket','More time in the nets needed.']];
+
+function renderFT(){
+  show('ft');
+  const st=store.get('streak',{n:0}); $('hdrScore').innerHTML = G.mode==='daily'&&st.n ? `STREAK<b>🔥 ${st.n}</b>` : `RUNS<b>${G.total}</b>`;
+  $('ftRuns').innerHTML=`${G.total}<small> /36</small>`;
+  const rk=RANKS.find(r=>G.total>=r[0]); $('ftRank').textContent=rk[1]; $('ftRankLine').textContent=rk[2]+(G.total===36?' Six sixes!':'');
+  $('ftOverLabel').textContent= G.mode==='daily' ? 'OVER #'+G.overNo : 'NETS · OVER '+'ABC'[G.overIdx];
+  // wagon wheel
+  let w=groundSVG(false);
+  G.results.forEach(r=>{ if(!r.runs) return; const [x,y]=endPoint(r.runs,r.ang);
+    w+=`<line x1="${CX}" y1="${CY}" x2="${x}" y2="${y}" stroke="${COL[r.runs]}" stroke-width="${r.runs>=4?3:2.2}" stroke-linecap="round"/>
+        <circle cx="${x}" cy="${y}" r="3.5" fill="${COL[r.runs]}"/>`; });
+  $('wagon').innerHTML=w;
+  // balls
+  const qs=OVERS[G.overIdx]; const box=$('ftBalls'); box.innerHTML='';
+  const hideSixes = G.mode==='daily';
+  G.results.forEach((r,i)=>{
+    const q=qs[i]; const row=document.createElement('div'); row.className='ballrow';
+    row.innerHTML=`<div class="n">${i+1}</div>
+      <div><div class="t">${q.q}</div><div class="a" style="color:${r.runs?COL[r.runs]:'#ff6b8b'}">${r.answer||'Bowled'}</div>
+      <button class="sheet-btn">All ${q.a.length} answers ↓</button></div>
+      <div class="r" style="color:${r.runs?COL[r.runs]:'#ff6b8b'}">${r.runs||'W'}</div>
+      <div class="sheet"></div>`;
+    const sheet=row.querySelector('.sheet');
+    let html='';
+    [1,2,4,6].forEach(t=>{
+      const list=q.a.filter(a=>a[1]===t).map(a=>a[0]);
+      if(!list.length) return;
+      if(t===6 && hideSixes && r.runs!==6){ html+=`<div class="tg"><b style="color:${COL[6]}">6s</b><span class="hid">${list.length} hidden until tomorrow. Try them in the nets.</span></div>`; return; }
+      html+=`<div class="tg"><b style="color:${COL[t]}">${t}${t===1?'s':'s'}</b>${list.map(n=>n===r.answer?`<u>${n}</u>`:n).join(', ')}</div>`;
+    });
+    sheet.innerHTML=html;
+    row.querySelector('.sheet-btn').onclick=()=>sheet.classList.toggle('on');
+    box.appendChild(row);
+  });
+  // share
+  const emo={0:'🔴',1:'1️⃣',2:'2️⃣',4:'4️⃣',6:'6️⃣'};
+  const head = G.mode==='daily' ? `SIXER · Over #${G.overNo} 🏏` : `SIXER · Nets, Over ${'ABC'[G.overIdx]} 🏏`;
+  const txt=`${head}\n${G.total} runs off 6 balls (${rk[1]})\n${G.results.map(r=>emo[r.runs]).join(' ')}\n${SHARE_URL.startsWith('http')?SHARE_URL:''}`.trim();
+  $('sharePre').textContent=txt;
+  $('waBtn').href='https://wa.me/?text='+encodeURIComponent(txt);
+  $('copyBtn').onclick=async()=>{ try{ await navigator.clipboard.writeText(txt); $('copyBtn').textContent='Copied ✓'; }catch(e){ $('copyBtn').textContent='Select the text above'; } };
+  $('imgWrap').style.display='none'; $('imgBtn').style.display='block';
+  $('imgBtn').onclick=()=>{ $('shareImg').src=shareImage(rk); $('imgWrap').style.display='block'; $('imgBtn').style.display='none'; };
+  // ranks table
+  const rt=$('ranksTable'); rt.innerHTML='<h3><span>The table</span><span>Runs</span></h3>';
+  const bands=['30–36','22–29','14–21','7–13','0–6'];
+  RANKS.forEach((r,i)=>{ const d=document.createElement('div'); if(r===rk) d.className='me'; d.innerHTML=`<span>${r[1]}</span><span class="mono">${bands[i]}</span>`; rt.appendChild(d); });
+  // countdown
+  if(G.mode==='daily'){
+    const upd=()=>{ const n=new Date(), m=new Date(n); m.setHours(24,0,0,0); const s=Math.floor((m-n)/1000);
+      $('nextInfo').innerHTML=`Next over in <b>${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}</b>`; };
+    upd(); clearInterval(window._cd); window._cd=setInterval(upd,1000);
+  } else $('nextInfo').textContent = G.newBest ? 'New personal best for this over.' : 'Best on this over: '+store.get('best-'+G.overIdx,G.total)+'/36';
+}
+
+$('playDaily').onclick=()=>start('daily',TODAY_IDX);
+$('homeBtn').textContent='Back to the nets';
+$('homeBtn').onclick=()=>{ clearInterval(window._cd); show('home'); renderHome(); };
+renderHome();
+</script>
+</body>
+</html>
