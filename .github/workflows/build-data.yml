@@ -1,0 +1,46 @@
+name: Build cricket database
+
+# Downloads Cricsheet's match files on GitHub's servers, builds a compact
+# database and publishes it to the `data` branch. Nothing runs on a laptop.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * 1'   # Mondays 04:17 UTC
+  push:
+    branches: [main]
+    paths: ['tools/build_db.py', '.github/workflows/build-data.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-data
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download Cricsheet
+        run: |
+          mkdir -p raw out
+          curl -fsSL --retry 3 -o raw/all_json.zip https://cricsheet.org/downloads/all_json.zip
+          curl -fsSL --retry 3 -o raw/people.csv https://cricsheet.org/register/people.csv
+          curl -fsSL --retry 3 -o raw/names.csv https://cricsheet.org/register/names.csv
+          ls -la raw
+      - name: Build database
+        run: python tools/build_db.py raw out
+      - name: Publish to data branch
+        run: |
+          cd out
+          git init -q -b data
+          git config user.name "sixer-data-bot"
+          git config user.email "sixer-data-bot@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Cricket database $(date -u +%F)"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" data
