@@ -1,0 +1,676 @@
+{
+ "built": "2026-11-16 21:29 UTC",
+ "matches": 23241,
+ "skipped_files": 0,
+ "players": 13782,
+ "players_with_full_name": 9512,
+ "wikidata_rows": 31978,
+ "people_columns": [
+  "identifier",
+  "name",
+  "unique_name",
+  "key_bcci",
+  "key_bcci_2",
+  "key_bigbash",
+  "key_cricbuzz",
+  "key_cricheroes",
+  "key_crichq",
+  "key_cricinfo",
+  "key_cricinfo_2",
+  "key_cricinfo_3",
+  "key_cricingif",
+  "key_cricketarchive",
+  "key_cricketarchive_2",
+  "key_cricketworld",
+  "key_nvplay",
+  "key_nvplay_2",
+  "key_opta",
+  "key_opta_2",
+  "key_pulse",
+  "key_pulse_2"
+ ],
+ "names_columns": [
+  "identifier",
+  "name"
+ ],
+ "by_type": [
+  [
+   "T20",
+   "male",
+   "club",
+   7143,
+   2008,
+   2026
+  ],
+  [
+   "T20",
+   "male",
+   "international",
+   3649,
+   2005,
+   2026
+  ],
+  [
+   "ODI",
+   "male",
+   "international",
+   2617,
+   2002,
+   2026
+  ],
+  [
+   "MDM",
+   "male",
+   "club",
+   2225,
+   2012,
+   2026
+  ],
+  [
+   "T20",
+   "female",
+   "international",
+   2200,
+   2009,
+   2026
+  ],
+  [
+   "T20",
+   "female",
+   "club",
+   1433,
+   2015,
+   2026
+  ],
+  [
+   "ODM",
+   "male",
+   "club",
+   1261,
+   2014,
+   2026
+  ],
+  [
+   "Test",
+   "male",
+   "international",
+   899,
+   2001,
+   2026
+  ],
+  [
+   "ODI",
+   "female",
+   "international",
+   620,
+   2007,
+   2026
+  ],
+  [
+   "ODM",
+   "male",
+   "international",
+   476,
+   2010,
+   2026
+  ],
+  [
+   "ODM",
+   "female",
+   "club",
+   327,
+   2020,
+   2026
+  ],
+  [
+   "IT20",
+   "male",
+   "international",
+   240,
+   2010,
+   2024
+  ],
+  [
+   "IT20",
+   "female",
+   "international",
+   80,
+   2013,
+   2017
+  ],
+  [
+   "ODM",
+   "female",
+   "international",
+   30,
+   2016,
+   2021
+  ],
+  [
+   "Test",
+   "female",
+   "international",
+   24,
+   2003,
+   2026
+  ],
+  [
+   "MDM",
+   "male",
+   "international",
+   17,
+   2006,
+   2017
+  ]
+ ],
+ "international_players_full_name": [
+  [
+   "female",
+   3021,
+   1509
+  ],
+  [
+   "male",
+   6339,
+   4496
+  ]
+ ],
+ "top_events": [
+  [
+   "Indian Premier League",
+   1243,
+   2008,
+   2026
+  ],
+  [
+   "Vitality Blast",
+   835,
+   2018,
+   2024
+  ],
+  [
+   "County Championship",
+   750,
+   2021,
+   2026
+  ],
+  [
+   "Syed Mushtaq Ali Trophy",
+   695,
+   2016,
+   2024
+  ],
+  [
+   "Big Bash League",
+   662,
+   2011,
+   2026
+  ],
+  [
+   "Royal London One-Day Cup",
+   586,
+   2014,
+   2022
+  ],
+  [
+   "Women's Big Bash League",
+   527,
+   2015,
+   2026
+  ],
+  [
+   "NatWest T20 Blast",
+   488,
+   2014,
+   2017
+  ],
+  [
+   "Specsavers County Championship",
+   471,
+   2016,
+   2019
+  ],
+  [
+   "Bangladesh Premier League",
+   469,
+   2012,
+   2026
+  ],
+  [
+   "Caribbean Premier League",
+   445,
+   2013,
+   2026
+  ],
+  [
+   "Pakistan Super League",
+   357,
+   2016,
+   2026
+  ],
+  [
+   "Plunket Shield",
+   343,
+   2012,
+   2026
+  ],
+  [
+   "One-Day Cup",
+   301,
+   2023,
+   2026
+  ],
+  [
+   "Super Smash",
+   266,
+   2017,
+   2026
+  ],
+  [
+   "LV= County Championship",
+   262,
+   2014,
+   2015
+  ],
+  [
+   "ICC Men's Cricket World Cup League 2",
+   252,
+   2019,
+   2026
+  ],
+  [
+   "Vitality Blast Men",
+   247,
+   2025,
+   2026
+  ],
+  [
+   "The Hundred Men's Competition",
+   201,
+   2021,
+   2026
+  ],
+  [
+   "Sheffield Shield",
+   199,
+   2017,
+   2026
+  ],
+  [
+   "Rachael Heyhoe Flint Trophy",
+   189,
+   2020,
+   2024
+  ],
+  [
+   "The Hundred Women's Competition",
+   188,
+   2021,
+   2026
+  ],
+  [
+   "ICC Men's T20 World Cup",
+   173,
+   2014,
+   2026
+  ],
+  [
+   "Major Clubs Limited Over Tournament",
+   160,
+   2024,
+   2026
+  ],
+  [
+   "CSA T20 Challenge",
+   154,
+   2016,
+   2024
+  ],
+  [
+   "Women's Super Smash",
+   148,
+   2021,
+   2026
+  ],
+  [
+   "Lanka Premier League",
+   143,
+   2020,
+   2026
+  ],
+  [
+   "CWC Challenge League",
+   142,
+   2019,
+   2026
+  ],
+  [
+   "Major League Tournament",
+   134,
+   2024,
+   2026
+  ],
+  [
+   "International League T20",
+   134,
+   2023,
+   2026
+  ],
+  [
+   "SA20",
+   130,
+   2023,
+   2026
+  ],
+  [
+   "Ram Slam T20 Challenge",
+   130,
+   2013,
+   2017
+  ],
+  [
+   "ICC Cricket World Cup",
+   130,
+   2011,
+   2023
+  ],
+  [
+   "ECB Women's One-Day Cup",
+   130,
+   2025,
+   2026
+  ],
+  [
+   "Charlotte Edwards Cup",
+   124,
+   2021,
+   2024
+  ],
+  [
+   "ICC Women's T20 World Cup",
+   122,
+   2018,
+   2026
+  ],
+  [
+   "Major Clubs T20 Tournament",
+   121,
+   2024,
+   2026
+  ],
+  [
+   "ICC Men's T20 World Cup Sub Regional Africa Qualifier",
+   115,
+   2021,
+   2026
+  ],
+  [
+   "Vitality Blast Women",
+   112,
+   2025,
+   2026
+  ],
+  [
+   "Cricket Ireland Inter-Provincial Twenty20 Trophy",
+   111,
+   2016,
+   2026
+  ],
+  [
+   "Major League Cricket",
+   109,
+   2023,
+   2026
+  ],
+  [
+   "ICC World Twenty20",
+   104,
+   2007,
+   2016
+  ],
+  [
+   "ICC World Twenty20 Qualifier",
+   103,
+   2008,
+   2015
+  ],
+  [
+   "ICC Women's World Cup",
+   102,
+   2009,
+   2025
+  ],
+  [
+   "ICC World Cup",
+   99,
+   2003,
+   2007
+  ],
+  [
+   "Women's Cricket Super League",
+   95,
+   2016,
+   2019
+  ],
+  [
+   "NatWest Series",
+   95,
+   2002,
+   2013
+  ],
+  [
+   "Kwibuka Women's Twenty20 Tournament",
+   95,
+   2019,
+   2026
+  ],
+  [
+   "ICC Champions Trophy",
+   90,
+   2004,
+   2025
+  ],
+  [
+   "Cricket Ireland Inter-Provincial Limited Over Cup",
+   90,
+   2016,
+   2026
+  ],
+  [
+   "Women's Premier League",
+   88,
+   2023,
+   2026
+  ],
+  [
+   "ICC Men's T20 World Cup Sub Regional Europe Qualifier",
+   88,
+   2022,
+   2024
+  ],
+  [
+   "Asia Cup",
+   80,
+   2004,
+   2023
+  ],
+  [
+   "ICC Women's Championship",
+   79,
+   2014,
+   2026
+  ],
+  [
+   "Nepal Premier League",
+   76,
+   2024,
+   2026
+  ],
+  [
+   "ICC Women's T20 World Cup Asia Region Qualifier",
+   71,
+   2019,
+   2025
+  ],
+  [
+   "Asian Cricket Council Women's Premier Cup",
+   71,
+   2024,
+   2026
+  ],
+  [
+   "ICC Men's T20 World Cup Qualifier",
+   70,
+   2019,
+   2022
+  ],
+  [
+   "The Marsh Cup",
+   69,
+   2021,
+   2024
+  ],
+  [
+   "ICC World Cricket League Division Four",
+   68,
+   2010,
+   2018
+  ]
+ ],
+ "check_top_test_runs": [
+  [
+   "JE Root",
+   "Joe Root",
+   14278,
+   41
+  ],
+  [
+   "AN Cook",
+   "Alastair Cook",
+   12472,
+   33
+  ],
+  [
+   "SPD Smith",
+   "Steve Smith",
+   11003,
+   37
+  ],
+  [
+   "KS Williamson",
+   "Kane Williamson",
+   9515,
+   33
+  ],
+  [
+   "V Kohli",
+   "Virat Kohli",
+   9230,
+   30
+  ],
+  [
+   "HM Amla",
+   "Hashim Amla",
+   9146,
+   28
+  ],
+  [
+   "DA Warner",
+   "David Warner",
+   8786,
+   26
+  ],
+  [
+   "KC Sangakkara",
+   "Kumar Sangakkara",
+   8489,
+   29
+  ],
+  [
+   "AB de Villiers",
+   "AB de Villiers",
+   8182,
+   21
+  ],
+  [
+   "MJ Clarke",
+   "Michael Clarke",
+   8146,
+   27
+  ],
+  [
+   "KP Pietersen",
+   "Kevin Pietersen",
+   8079,
+   23
+  ],
+  [
+   "AD Mathews",
+   "Angelo Mathews",
+   8073,
+   15
+  ]
+ ],
+ "check_top_odi_wkts": [
+  [
+   "SL Malinga",
+   "Lasith Malinga",
+   322
+  ],
+  [
+   "Shakib Al Hasan",
+   "Shakib Al Hasan",
+   258
+  ],
+  [
+   "B Lee",
+   "Brett Lee",
+   257
+  ],
+  [
+   "JM Anderson",
+   "James Anderson",
+   250
+  ],
+  [
+   "Shahid Afridi",
+   "Shahid Afridi",
+   242
+  ],
+  [
+   "MA Starc",
+   "Mitchell Starc",
+   239
+  ],
+  [
+   "AU Rashid",
+   "Adil Rashid",
+   235
+  ],
+  [
+   "RA Jadeja",
+   "Ravindra Jadeja",
+   227
+  ],
+  [
+   "MG Johnson",
+   "Mitchell Johnson",
+   226
+  ],
+  [
+   "TG Southee",
+   "Tim Southee",
+   215
+  ],
+  [
+   "Mashrafe Mortaza",
+   "Mashrafe Bin Mortaza",
+   209
+  ],
+  [
+   "TA Boult",
+   "Trent Boult",
+   206
+  ]
+ ]
+}
