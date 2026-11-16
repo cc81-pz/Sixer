@@ -38,6 +38,7 @@ IN_IND = ("m.city IN ('Mumbai','Kolkata','Chennai','Delhi','Bengaluru','Bangalor
 WC_ODI = "m.event IN ('ICC Cricket World Cup','World Cup','ICC World Cup')"
 WC_T20 = "m.event IN ('ICC World Twenty20','World T20','ICC Men''s T20 World Cup')"
 IPL = "m.event='Indian Premier League'"
+ASHES = TEST + " AND t.name IN ('England','Australia') AND o.name IN ('England','Australia') AND m.date>='2006-11-01'"
 def pl(n, w): return f"{n} {w}" if n == 1 else f"{n} {w}es" if w.endswith('match') else f"{n} {w}s"
 
 def played(cond, unit):
@@ -52,6 +53,9 @@ def took(wk, cond, word):
     for pid, n, best in q(f"SELECT w.pid, COUNT(*), MAX(w.wickets) {BOWL} WHERE w.wickets>=? AND {cond} GROUP BY w.pid", wk):
         out.append((pid, n + best / 1e2, pl(n, word) + f", best {best} wickets" if n > 1 else f"{best} wickets"))
     return out
+
+def wickets(cond):
+    return [(pid, n, pl(n, 'wicket')) for pid, n in q(f"SELECT w.pid, SUM(w.wickets) {BOWL} WHERE {cond} GROUP BY w.pid HAVING SUM(w.wickets)>0")]
 
 R = []   # (id, question, subtitle, rows, competition)
 def add(id, question, sub, rows, event=None): R.append((id, question, sub, rows, event))
@@ -75,8 +79,20 @@ for id, team, fmt, cond, y0, unit in [
     ('wi-t20i', 'West Indies', 'T20 international', T20I, 2016, 'T20I'), ('eng-t20i', 'England', 'T20 international', T20I, 2018, 'T20I')]:
     art = 'an' if fmt == 'ODI' else 'a'
     add(id, f"Name a man who has played {art} {fmt} for {team} since {y0}", f"Men's {fmt}s from 1 January {y0}", played(f"{cond} AND t.name='{team}' AND m.year>={y0}", unit))
-add('indw-t20i', "Name a woman who has played a T20 international for India since 2018", "Women's T20 internationals from 1 January 2018",
-    played("m.gender='female' AND m.team_type='international' AND m.match_type='T20' AND t.name='India' AND m.year>=2018", 'T20I'))
+for id, team, fmt, cond, y0, unit in [('pak-test', 'Pakistan', 'Test', TEST, 2015, 'Test'), ('nz-odi', 'New Zealand', 'ODI', ODI, 2015, 'ODI'),
+                                      ('sa-odi', 'South Africa', 'ODI', ODI, 2015, 'ODI'), ('aus-t20i', 'Australia', 'T20 international', T20I, 2018, 'T20I')]:
+    art = 'an' if fmt == 'ODI' else 'a'
+    add(id, f"Name a man who has played {art} {fmt} for {team} since {y0}", f"Men's {fmt}s from 1 January {y0}", played(f"{cond} AND t.name='{team}' AND m.year>={y0}", unit))
+
+# ---- openers: broad, friendly pools for the first ball of an over
+add('ind-t20wc', "Name a man who has played for India at a T20 World Cup", "Every tournament from 2007", played(f"{T20I} AND {WC_T20} AND t.name='India'", 'T20 World Cup match'))
+add('aus-wc', "Name a man who has played for Australia at an ODI World Cup since 2003", "The six tournaments from 2003 to 2023", played(f"{ODI} AND {WC_ODI} AND t.name='Australia'", 'World Cup match'))
+add('ind-test-100', "Name a man who has scored a Test hundred for India since 2010", "Men's Tests from 2010", scored(100, TEST + " AND t.name='India' AND m.year>=2010", 'hundred'))
+add('indeng-played', "Name a player who has appeared in an India v England Test since 2018", "Either side · men's Tests from 2018", played(TEST + " AND t.name IN ('India','England') AND o.name IN ('India','England') AND m.year>=2018", 'Test'))
+add('ind-test-potm', "Name an Indian who has been Player of the Match in a Test since 2010", "Men's Tests from 2010", played(TEST + " AND t.name='India' AND a.potm=1 AND m.year>=2010", 'award'))
+add('ind-odi-wkt', "Name a bowler who has taken an ODI wicket for India since 2015", "Men's ODIs from 1 January 2015", wickets(ODI + " AND t.name='India' AND m.year>=2015"))
+add('ashes-wkt', "Name a bowler who has taken an Ashes wicket since 2015", "England v Australia men's Tests, 2015 onwards", wickets(ASHES + " AND m.year>=2015"))
+add('eng-t20i-50', "Name a man who has scored a T20 international fifty for England", "Scores of 50 or more · men's T20Is", scored(50, T20I + " AND t.name='England'", 'fifty-plus score'))
 
 # ---- feats at a ground or in a country
 add('lords-50', "Name a batter who has scored a Test fifty at Lord's since 2010", "Scores of 50 or more · men's Tests from 2010", scored(50, TEST + " AND m.venue LIKE 'Lord%' AND m.year>=2010", 'fifty-plus score'))
@@ -88,7 +104,6 @@ add('vis-100-ind', "Name a visiting batter who has scored a Test hundred in Indi
 add('vis-100-aus', "Name a visiting batter who has scored a Test hundred in Australia since 2010", "Touring batters only · men's Tests from 2010", scored(100, TEST + f" AND {IN_AUS} AND t.name<>'Australia' AND o.name='Australia' AND m.year>=2010", 'hundred'))
 
 # ---- rivalries and opponents
-ASHES = TEST + " AND t.name IN ('England','Australia') AND o.name IN ('England','Australia') AND m.date>='2006-11-01'"
 add('ashes-played', "Name a player who has appeared in an Ashes Test since 2015", "England v Australia men's Tests, 2015 onwards", played(ASHES + " AND m.year>=2015", 'Ashes Test'))
 add('ashes-100', "Name a batter who has scored an Ashes hundred since 2006–07", "England v Australia men's Tests, from the 2006–07 series", scored(100, ASHES, 'hundred'))
 add('ashes-5w', "Name a bowler who has taken an Ashes five-for since 2006–07", "Five or more wickets in an innings · from the 2006–07 series", took(5, ASHES, 'five-for'))
@@ -120,8 +135,6 @@ add('csk', "Name a player who has appeared for Chennai Super Kings since 2018", 
 add('kkr', "Name a player who has appeared for Kolkata Knight Riders since 2020", "IPL matches from 2020 onwards", played(IPL + " AND t.name='Kolkata Knight Riders' AND m.year>=2020", 'match'), 'Indian Premier League')
 add('bbl-100', "Name a batter who has scored a Big Bash League hundred", "Men's BBL, 2011–12 to today", scored(100, "m.event='Big Bash League'", 'hundred'), 'Big Bash League')
 add('hundred-final', "Name a player who has appeared in a men's Hundred final", "Every final since 2021", played("m.event='The Hundred Men''s Competition' AND m.stage='Final'", 'final'), "The Hundred Men's Competition")
-add('wpl-final', "Name a player who has appeared in a Women's Premier League final", "Every final since 2023", played("m.event='Women''s Premier League' AND m.stage='Final'", 'final'), "Women's Premier League")
-
 # ---- names, aliases, tiers
 # Nicknames and everyday spellings fans type. Short ones are allowed here; clashes inside a question are still dropped.
 NICK = {'James Anderson': ['Jimmy Anderson', 'Jimmy'], 'AB de Villiers': ['ABD', 'AB', 'Abraham de Villiers'], 'Yuvraj Singh': ['Yuvi'], 'MS Dhoni': ['MSD', 'Mahi', 'Mahendra Singh Dhoni', 'Thala'],
@@ -178,6 +191,11 @@ def build(id, question, sub, rows, event=None):
     return {'id': id, 'q': question, 's': sub, 'a': ans}
 
 QS = {r[0]: build(*r) for r in R}
+# Right answers the database cannot see (Cricsheet holds no Afghanistan matches). [name, tier, aliases, note]
+EXTRA = {'odi-100-v-ind': [['Mohammad Shahzad', 6, ['Shahzad', 'Mohammad Shahzad Mohammadi'], '124 in the tied Asia Cup match, 2018']]}
+for k, rows in EXTRA.items():
+    have = {a[0] for a in QS[k]['a']}
+    QS[k]['a'] += [r + [None] for r in rows if r[0] not in have]
 if REPORT:
     nofull = collections.Counter()
     for k, v in QS.items():
@@ -185,7 +203,7 @@ if REPORT:
         print(f"\n{k}: {len(a)} answers  tiers {dict(sorted(t.items()))}\n   1s: " + ', '.join(x[0] for x in a if x[1] == 1)[:230] +
               "\n   2s: " + ', '.join(x[0] for x in a if x[1] == 2)[:200] + "\n   6s: " + ', '.join(f"{x[0]} ({x[3]})" for x in a if x[1] == 6)[-330:])
         for x in a:
-            if not PLAYER[x[4]][1]: nofull[x[0]] += 1
+            if x[4] and not PLAYER[x[4]][1]: nofull[x[0]] += 1
     print('\nNO FULL NAME:', dict(nofull))
     print('WTC finals:', q("SELECT date,venue FROM matches m WHERE " + TEST + " AND m.stage='Final'"))
     print('India-involved Tests since 2010 not counted as in India (city):', q(f"SELECT m.city,COUNT(*) FROM matches m JOIN teams a ON a.tid=m.team1 JOIN teams b ON b.tid=m.team2 WHERE {TEST} AND m.year>=2010 AND (a.name='India' OR b.name='India') AND NOT ({IN_IND}) GROUP BY 1"))
@@ -193,17 +211,17 @@ if REPORT:
     print('finals found:', [(k, q(f"SELECT COUNT(DISTINCT m.mid) {APP} WHERE {cnd}")[0][0]) for k, cnd in [('wc', f"{ODI} AND {WC_ODI} AND m.stage='Final'"), ('t20wc', f"{T20I} AND {WC_T20} AND m.stage='Final' AND m.year>=2014"), ('ct', f"{ODI} AND m.event='ICC Champions Trophy' AND m.stage='Final'"), ('ipl', IPL + " AND m.stage='Final' AND m.year>=2020"), ('hundred', "m.event='The Hundred Men''s Competition' AND m.stage='Final'"), ('wpl', "m.event='Women''s Premier League' AND m.stage='Final'")]])
     sys.exit()
 
-BANKERS = ['wc-nations', 'test-nations', 'india-test-captains', 't20wc-nations', 'triple', 'wc-hosts', 'eng-grounds', 'aus-grounds', 'wc-captains', 'ipl-teams']
-GRID = [['wc-nations', 'ind-test', 'lords-50', 'ipl-100', 'wc-final-xi', '100-v-ind'],
-        ['test-nations', 'aus-odi', 'ashes-100', 'bbl-100', 'ind-t20i', 'eng-5w'],
-        ['india-test-captains', 'eng-test', 'odi-100-v-ind', 'rcb', 't20wc-final-xi', 'aus-5w'],
-        ['t20wc-nations', 'ind-odi', 'vis-100-aus', 'ipl-5w', 'ashes-played', 'sa-test'],
-        ['triple', 'pak-t20i', 'mcg-50', 'mi', 'ct-final-xi', 'ind-test-50'],
-        ['wc-hosts', 'nz-test', '5w-v-ind', 'ipl-final', 'indpak', 'eng-odi'],
-        ['eng-grounds', 'aus-test', 'ind-odi-100', 'csk', 'wtc-final', 'wi-t20i'],
-        ['aus-grounds', 'sl-odi', 'vis-100-ind', 'wpl-final', 'ind-wc', 'eng-test-100'],
-        ['wc-captains', 'ban-odi', 'indaus-100', 'kkr', 'ashes-5w', 'ind-t20i-50'],
-        ['ipl-teams', 'eng-t20i', 'ind-5w', 'hundred-final', 'aus-test-100', 'indw-t20i']]
+BANKERS = []   # ids of hand-written questions to keep from index.html (none at present)
+GRID = [['ind-t20wc', 'ind-test', 'lords-50', 'ipl-100', 'wc-final-xi', '100-v-ind'],
+        ['pak-test', 'aus-odi', 'ashes-100', 'bbl-100', 'ind-t20i', 'eng-5w'],
+        ['ind-test-100', 'eng-test', 'odi-100-v-ind', 'rcb', 't20wc-final-xi', 'aus-5w'],
+        ['indeng-played', 'ind-odi', 'vis-100-aus', 'ipl-5w', 'ashes-played', 'sa-test'],
+        ['aus-wc', 'pak-t20i', 'mcg-50', 'mi', 'ct-final-xi', 'ind-test-50'],
+        ['ind-test-potm', 'nz-test', '5w-v-ind', 'ipl-final', 'indpak', 'eng-odi'],
+        ['ashes-wkt', 'aus-test', 'ind-odi-100', 'csk', 'wtc-final', 'wi-t20i'],
+        ['ind-odi-wkt', 'sl-odi', 'vis-100-ind', 'eng-t20i-50', 'ind-wc', 'eng-test-100'],
+        ['nz-odi', 'ban-odi', 'indaus-100', 'kkr', 'ashes-5w', 'ind-t20i-50'],
+        ['sa-odi', 'eng-t20i', 'ind-5w', 'hundred-final', 'aus-test-100', 'aus-t20i']]
 page = open(html, encoding='utf-8').read()
 start = page.index('const OVERS = ['); end = page.index('\n];\n', start) + 4
 old = page[start:end]
