@@ -157,6 +157,24 @@ button,a.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .stat b{display:block;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-style:italic;font-weight:900;font-size:28px;line-height:1;color:var(--lime)}
 .stat small{font-size:11px;color:var(--dim)}
 @media (prefers-reduced-motion:reduce){.livecount i,.shake{animation:none}}
+.miss.vague{background:#3a2c0a;color:#ffe08a;border-color:#ffd23f;white-space:normal;width:86%;text-align:center}
+.modal{position:fixed;inset:0;background:rgba(5,8,22,.8);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.modal.on{display:flex}
+.sheetbox{position:relative;width:100%;max-width:520px;max-height:88vh;overflow:auto;overscroll-behavior:contain;background:var(--night2);border:1px solid var(--line);border-bottom:0;border-radius:20px 20px 0 0;padding:20px 18px calc(26px + env(safe-area-inset-bottom));animation:rise .22s ease-out}
+@keyframes rise{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@media (min-width:560px){.modal{align-items:center}.sheetbox{border-radius:20px;border-bottom:1px solid var(--line)}}
+.sheetbox .x{position:absolute;right:14px;top:14px;width:38px;height:38px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--ink);font-size:15px}
+.sh-kicker{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.sh-q{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-weight:800;font-size:27px;line-height:1.05;margin:4px 50px 12px 0}
+.sh-sub{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--dim);padding-top:11px;border-top:1px dashed var(--line)}
+.tierhead{display:flex;justify-content:space-between;align-items:center;margin:18px 0 8px;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+.tierhead .tag{color:var(--c);border:1px solid var(--c);border-radius:6px;padding:3px 8px;background:color-mix(in srgb,var(--c) 12%,transparent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:baseline;gap:7px;padding:7px 10px 7px 9px;border-radius:9px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--c);font-size:14px;font-weight:500}
+.chip .pc{margin:0}
+.chip.me{background:color-mix(in srgb,var(--c) 18%,var(--panel));border-color:var(--c);color:var(--c);font-weight:700}
+.chip.me .pc{color:var(--c);opacity:.85}
+.chip.locked{color:var(--dim);font-style:italic}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .shake{animation:shake .25s}
 </style>
@@ -218,6 +236,7 @@ button,a.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
       <div class="you" id="fbYou"></div>
       <div class="note" id="fbNote"></div>
       <div class="crowd" id="fbCrowd"></div>
+      <button class="sheet-btn" id="fbSheet" style="margin-top:8px"></button>
       <button class="btn" id="nextBtn" style="margin-top:12px">Next ball →</button>
     </div>
   </section>
@@ -255,6 +274,16 @@ button,a.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
     <div class="next" id="nextInfo"></div>
     <button class="btn ghost" id="homeBtn" style="margin-top:14px">Back to the pavilion</button>
   </section>
+</div>
+
+<div class="modal" id="sheetModal" aria-hidden="true">
+  <div class="sheetbox" role="dialog" aria-modal="true" aria-labelledby="shQ">
+    <button class="x" id="shClose" aria-label="Close">✕</button>
+    <div class="sh-kicker">Answer sheet</div>
+    <h2 class="sh-q" id="shQ"></h2>
+    <div class="sh-sub" id="shSub"></div>
+    <div id="shBody"></div>
+  </div>
 </div>
 
 <script>
@@ -410,8 +439,8 @@ const OVERS = [
    ["Ben Stokes",1,["stokes"]],["Joe Root",1,["root"]],["Alastair Cook",1,["cook","alistair cook"]],["Michael Vaughan",2,["vaughan"]],
    ["Andrew Strauss",2,["strauss"]],["Andrew Flintoff",2,["flintoff","freddie flintoff","freddie"]],["Nasser Hussain",4,["hussain","nasser"]],
    ["Kevin Pietersen",4,["pietersen","kp"]],["Ollie Pope",4,["pope"],"Stand-in, 2024"],["Marcus Trescothick",6,["trescothick","tres"],"Two Tests as stand-in"]]},
-  {id:"aus-grounds", q:"Name a ground in Australia that has hosted a men's Test", s:"Up to the end of 2025", a:[
-   ["Melbourne Cricket Ground",1,["mcg","melbourne"]],["Sydney Cricket Ground",1,["scg","sydney"]],["The Gabba",1,["gabba","brisbane","brisbane cricket ground","woolloongabba"]],
+  {id:"aus-grounds", q:"Name a ground in Australia that has hosted a men's Test", s:"Up to the end of 2025", vague:["perth","brisbane"], a:[
+   ["Melbourne Cricket Ground",1,["mcg","melbourne"]],["Sydney Cricket Ground",1,["scg","sydney"]],["The Gabba",1,["gabba","brisbane cricket ground","woolloongabba"]],
    ["Adelaide Oval",1,["adelaide"]],["Perth Stadium",2,["optus stadium","optus"],"Since 2018"],["WACA Ground",2,["waca"]],
    ["Bellerive Oval",4,["bellerive","hobart","blundstone arena","ninja stadium"]],["Manuka Oval",6,["manuka","canberra"],"One Test, 2019"],
    ["Cazaly's Stadium",6,["cazalys","cairns"],"2003 and 2004"],["Marrara Oval",6,["marrara","darwin"],"2003 and 2004"],["Exhibition Ground",6,["brisbane exhibition ground"],"Brisbane, 1928"]]},
@@ -442,7 +471,7 @@ const OVERS = [
   {id:"ind-300", q:"Name an Indian bowler with 300 or more Test wickets", s:"Up to the end of 2025", people:true, a:[
    ["Anil Kumble",1,["kumble","jumbo"],"619"],["Ravichandran Ashwin",1,["ashwin","r ashwin","ash"],"537"],["Kapil Dev",1,["kapil"],"434"],
    ["Harbhajan Singh",2,["harbhajan","bhajji"],"417"],["Ravindra Jadeja",2,["jadeja","jaddu"]],["Zaheer Khan",4,["zaheer"],"311"],["Ishant Sharma",4,["ishant"],"311"]]},
-  {id:"bbl", q:"Name a team that has won the Big Bash League", s:"2011–12 to 2024–25", a:[
+  {id:"bbl", q:"Name a team that has won the Big Bash League", s:"2011–12 to 2024–25", vague:["melbourne"], a:[
    ["Perth Scorchers",2,["scorchers","perth"],"Five titles"],["Sydney Sixers",2,["sixers"],"Three titles"],["Brisbane Heat",4,["heat","brisbane"],"2012–13, 2023–24"],
    ["Sydney Thunder",4,["thunder"],"2015–16"],["Adelaide Strikers",4,["strikers","adelaide"],"2017–18"],["Melbourne Renegades",4,["renegades"],"2018–19"],
    ["Hobart Hurricanes",6,["hurricanes","hobart"],"2024–25"]]}
@@ -548,31 +577,49 @@ function lev(a,b){
     if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]) d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1); }
   return d[a.length][b.length];
 }
+/* Words too common to identify an answer on their own. */
+const STOP=new Set('united states south north west east new city town stadium ground oval cricket international national super kings royal royals indians knight riders county rovers singh khan'.split(' '));
+/* strong: text that names exactly one answer. vague: text that fits more than one,
+   so the player is asked to be more specific instead of being given a miss.
+   A question can add its own vague words with vague:[...] (e.g. a city with two teams). */
 function buildIndex(q){
-  const strong=new Map(), weak=new Map(), owners=new Map();
-  if(q.people) q.a.forEach((ans,i)=>norm(ans[0]).split(' ').forEach(t=>{ if(!owners.has(t)) owners.set(t,new Set()); owners.get(t).add(i); }));
+  const strong=new Map(), part=new Map();
+  const add=(k,i)=>{ if(!part.has(k)) part.set(k,new Set()); part.get(k).add(i); };
+  q.a.forEach((ans,i)=>[ans[0],...(ans[2]||[])].forEach(k=>strong.set(norm(k),i)));
   q.a.forEach((ans,i)=>{
-    [ans[0],...(ans[2]||[])].forEach(k=>strong.set(norm(k),i));
-    if(q.people){
-      const toks=norm(ans[0]).split(' ');
-      [toks[0],toks[toks.length-1]].forEach(t=>{
-        if(t.length<4 || owners.get(t).size>1) return;
-        weak.set(t,i);
-      });
-    }
+    const t=norm(ans[0]).split(' ');
+    t.forEach((w,j)=>{ if(w.length<4) return;
+      if(STOP.has(w)){ add(w,i); add(w,-1-i); return; }            // a common word alone is never enough: ask for more
+      add(w+(q.people&&j>0&&j<t.length-1?'|mid':''),i); });        // single words
+    for(let n=2;n<t.length;n++) for(let j=0;j+n<=t.length;j++) add(t.slice(j,j+n).join(' '),i);             // runs of words
   });
-  weak.forEach((v,k)=>{ if(!strong.has(k) && v>=0) strong.set(k,v); });
-  return strong;
+  const vague=new Map();
+  // a middle name counts towards "more than one person has this name" but never identifies anyone
+  const owners=k=>new Set([...(part.get(k)||[]),...(part.get(k+'|mid')||[])]);
+  part.forEach((_,key)=>{ const k=key.replace('|mid',''); if(strong.has(k)) return; const o=owners(k);
+    if(o.size>1) vague.set(k,o); else if(!key.endsWith('|mid')) strong.set(k,[...o][0]); });
+  vague.forEach((o,k)=>o.forEach(i=>{ if(i<0) o.delete(i); }));
+  (q.vague||[]).forEach(k=>{ k=norm(k); strong.delete(k); vague.set(k,new Set()); });
+  return {strong,vague};
 }
+/* Returns the answer's index, -1 for a miss, -2 when the text fits more than one answer. */
 function match(q,input){
   const k=norm(input); if(!k) return -1;
-  const idx=q._idx||(q._idx=buildIndex(q));
-  if(idx.has(k)) return idx.get(k);
+  const {strong,vague}=q._idx||(q._idx=buildIndex(q));
+  if(strong.has(k)) return strong.get(k);
+  if(vague.has(k)) return -2;
+  if(k.length>=5){ // an unfinished name, e.g. "sydney six"
+    const hit=new Set(); let any=false;
+    strong.forEach((i,key)=>{ if(key.startsWith(k) && k.length>=key.length*.6){ hit.add(i); any=true; } });
+    if(hit.size===1) return [...hit][0]; if(any) return -2;
+  }
   const tol = k.length>=9?2 : k.length>=5?1 : 0;
   if(!tol) return -1;
-  let best=99, hits=new Set();
-  idx.forEach((i,key)=>{ const d=lev(k,key); if(d<best){best=d;hits=new Set([i]);} else if(d===best) hits.add(i); });
-  return best<=tol && hits.size===1 ? [...hits][0] : -1;
+  let best=99, hits=new Set(), vg=false;
+  strong.forEach((i,key)=>{ const d=lev(k,key); if(d<best){best=d;hits=new Set([i]);vg=false;} else if(d===best) hits.add(i); });
+  vague.forEach((_,key)=>{ const d=lev(k,key); if(d<best){best=d;hits=new Set();vg=true;} else if(d===best) vg=true; });
+  if(best>tol) return -1;
+  return (!vg && hits.size===1) ? [...hits][0] : -2;
 }
 
 /* ============ DAY / STORAGE ============ */
@@ -738,9 +785,14 @@ $('answerForm').addEventListener('submit',e=>{
   e.preventDefault(); if(G.locked) return;
   const inp=$('answer'), v=inp.value.trim(); if(!v) return;
   const q=OVERS[G.overIdx][G.ball]; const i=match(q,v);
+  if(i===-2){
+    const t=$('missToast'); t.textContent=`“${v}” isn't enough on its own. Be more specific.`; t.className='miss vague show';
+    clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2600);
+    inp.focus(); return;
+  }
   if(i<0){
     G.misses.push(v); inp.value='';
-    const t=$('missToast'); t.textContent='✗ '+v+': play and a miss'; t.classList.add('show');
+    const t=$('missToast'); t.textContent='✗ '+v+': play and a miss'; t.className='miss show';
     clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1300);
     $('groundbox').classList.remove('shake'); void $('groundbox').offsetWidth; $('groundbox').classList.add('shake');
     $('missList').textContent='Missed: '+G.misses.join(' · '); saveLive();
@@ -774,6 +826,7 @@ function finishBall(i){
   } else {
     $('fbCrowd').innerHTML=`<b>${fmtPct(cr.bowled)}</b> of players were bowled by this one too<div class="bar"><i style="width:${(cr.bowled/cr.pct[cr.top]*100).toFixed(1)}%;max-width:100%;background:#ff6b8b"></i></div>${popular}`;
   }
+  $('fbSheet').textContent=`See all ${q.a.length} answers →`; $('fbSheet').onclick=()=>openSheet(q,r,G.overNo);
   $('nextBtn').textContent = G.ball===5 ? 'Close the innings →' : 'Next ball →';
   setTimeout(()=>{ $('feedback').classList.add('on'); renderTracker(); $('nextBtn').focus(); }, 500);
 }
@@ -875,6 +928,32 @@ function finishOver(){
   renderFT();
 }
 
+const TIER_NAME={1:'Nudged',2:'Pushed',4:'Boundary',6:'Maximum'};
+function openSheet(q,r,overNo){
+  const cq=Crowd.q(q), today=overNo===OVER_NO, mine=r&&r.answer;
+  $('shQ').textContent=q.q;
+  $('shSub').textContent=`% = share of ${today?"today's ":''}${Crowd.players(overNo).toLocaleString('en-GB')} players who said it`;
+  const chip=([a,p])=>`<span class="chip${a[0]===mine?' me':''}">${a[0]}<span class="pc">${fmtPct(p)}</span></span>`;
+  let h='';
+  [6,4,2,1].forEach(t=>{
+    const list=q.a.map((a,j)=>[a,cq.pct[j]]).filter(e=>e[0][1]===t).sort((x,y)=>y[1]-x[1]); if(!list.length) return;
+    h+=`<div class="tierhead" style="--c:${COL[t]}"><span class="tag">${TIER_NAME[t]}</span><span>${t} run${t>1?'s':''} · ${list.length}</span></div><div class="chips" style="--c:${COL[t]}">`;
+    if(t===6 && today){ // today's sixes stay hidden, apart from one you found yourself
+      const got=list.filter(e=>e[0][0]===mine), rest=list.length-got.length;
+      h+=got.map(chip).join('')+(rest?`<span class="chip locked">${got.length?rest+' more revealed':'Revealed'} tomorrow</span>`:'');
+    } else h+=list.map(chip).join('');
+    h+='</div>';
+  });
+  h+=`<div class="tierhead" style="--c:#ff6b8b"><span class="tag">Bowled</span><span>0 runs</span></div><div class="chips" style="--c:#ff6b8b"><span class="chip${r&&!r.answer?' me':''}">Ran out of time<span class="pc">${fmtPct(cq.bowled)}</span></span></div>`;
+  $('shBody').innerHTML=h;
+  const m=$('sheetModal'); m.classList.add('on'); m.setAttribute('aria-hidden','false'); m.querySelector('.sheetbox').scrollTop=0;
+  document.body.style.overflow='hidden'; $('shClose').focus();
+}
+function closeSheet(){ const m=$('sheetModal'); if(!m.classList.contains('on')) return; m.classList.remove('on'); m.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+$('shClose').onclick=closeSheet;
+$('sheetModal').addEventListener('click',e=>{ if(e.target.id==='sheetModal') closeSheet(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSheet(); });
+
 const RANKS=[[30,'Hall of Famer','Frankly absurd range.'],[22,'Test regular','Proper cricket brain.'],[14,'IPL squad player','You know your game.'],[7,'Ranji grinder','Solid, if unspectacular.'],[0,'Gully cricket','More time in the nets needed.']];
 
 function renderFT(){
@@ -904,20 +983,9 @@ function renderFT(){
     row.innerHTML=`<div class="n">${i+1}</div>
       <div><div class="t">${q.q}</div><div class="a" style="color:${r.runs?COL[r.runs]:'#ff6b8b'}">${r.answer||'Bowled'}</div>
       <div class="said">${r.answer ? fmtPct(Crowd.pctFor(q,r.answer))+' of players said this' : fmtPct(Crowd.q(q).bowled)+' of players were bowled too'}</div>
-      <button class="sheet-btn">All ${q.a.length} answers ↓</button></div>
-      <div class="r" style="color:${r.runs?COL[r.runs]:'#ff6b8b'}">${r.runs||'W'}</div>
-      <div class="sheet"></div>`;
-    const sheet=row.querySelector('.sheet');
-    let html='';
-    [1,2,4,6].forEach(t=>{
-      const cq=Crowd.q(q);
-      const list=q.a.map((a,j)=>[a,cq.pct[j]]).filter(e=>e[0][1]===t).sort((x,y)=>y[1]-x[1]);
-      if(!list.length) return;
-      if(t===6 && hideSixes && r.runs!==6){ html+=`<div class="tg"><b style="color:${COL[6]}">6s</b><span class="hid">${list.length} hidden until tomorrow. No spoilers for the group chat.</span></div>`; return; }
-      html+=`<div class="tg"><b style="color:${COL[t]}">${t}s</b>${list.map(([a,p])=>(a[0]===r.answer?`<u>${a[0]}</u>`:a[0])+`<span class="pc">${fmtPct(p)}</span>`).join(', ')}</div>`;
-    });
-    sheet.innerHTML=html;
-    row.querySelector('.sheet-btn').onclick=()=>sheet.classList.toggle('on');
+      <button class="sheet-btn">All ${q.a.length} answers →</button></div>
+      <div class="r" style="color:${r.runs?COL[r.runs]:'#ff6b8b'}">${r.runs||'W'}</div>`;
+    row.querySelector('.sheet-btn').onclick=()=>openSheet(q,r,G.overNo);
     box.appendChild(row);
   });
   // share
