@@ -150,15 +150,26 @@ for b in sparql('SELECT ?cid ?alt WHERE { ?item wdt:P2697 ?cid ; skos:altLabel ?
     wd_alt[b['cid']['value'].strip()].add(b['alt']['value'])
 print('wikidata players', len(wd), 'with aliases', len(wd_alt))
 
+# hand-kept corrections, for well-known players Wikidata files under a different id
+over = {}
+ov_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'name_overrides.csv')
+if os.path.exists(ov_path):
+    with open(ov_path, newline='', encoding='utf-8') as f:
+        for row in csv.DictReader(f): over[row['cricinfo'].strip()] = row['full_name'].strip()
+def spelled_out(name):   # "Yuvraj Singh" is already a full name; "RG Sharma" is not
+    first = name.split(' ')[0]
+    return ' ' in name and not (first.isupper() and len(first) <= 4) and len(first) > 2
+
 full = 0
 for key, pid in pids.items():
     row = people.get(key) or {}
     cids = [row.get(c) for c in (people_cols or []) if c and c.startswith('key_cricinfo') and row.get(c)]
     hit = next((wd[c] for c in cids if c in wd), None)
     name = row.get('name') or sorted(seen_names[key])[0]
+    fname = next((over[c] for c in cids if c in over), None) or (hit[1] if hit else None) or (name if spelled_out(name) else None)
     cur.execute('INSERT INTO players VALUES(?,?,?,?,?,?,?,?)', (pid, None if key.startswith('x:') else key, name, row.get('unique_name'),
-                hit[1] if hit else None, cids[0] if cids else None, hit[0] if hit else None, hit[2] if hit else None))
-    full += 1 if hit else 0
+                fname, cids[0] if cids else None, hit[0] if hit else None, hit[2] if hit else None))
+    full += 1 if fname else 0
     rows = {(n, 'scorecard') for n in seen_names[key]} | {(n, 'cricsheet') for n in alt.get(key, ())}
     for c in cids: rows |= {(n, 'wikidata') for n in wd_alt.get(c, ())}
     cur.executemany('INSERT INTO names VALUES(?,?,?)', [(pid, n, s) for n, s in rows if n])

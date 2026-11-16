@@ -8,7 +8,7 @@ on:
     - cron: '17 4 * * 1'   # Mondays 04:17 UTC
   push:
     branches: [main]
-    paths: ['tools/build_db.py', '.github/workflows/build-data.yml']
+    paths: ['tools/build_db.py', 'tools/name_overrides.csv', '.github/workflows/build-data.yml']
 
 permissions:
   contents: write
@@ -29,7 +29,12 @@ jobs:
       - name: Download Cricsheet
         run: |
           mkdir -p raw out
-          curl -fsSL --retry 3 -o raw/all_json.zip https://cricsheet.org/downloads/all_json.zip
+          # Cricsheet sometimes answers with a holding page; wait and ask again
+          for try in 1 2 3 4; do
+            curl -fsSL --retry 3 -o raw/all_json.zip https://cricsheet.org/downloads/all_json.zip || true
+            unzip -tq raw/all_json.zip >/dev/null 2>&1 && break
+            echo "No zip on attempt $try, waiting"; sleep 90
+          done
           curl -fsSL --retry 3 -o raw/people.csv https://cricsheet.org/register/people.csv
           curl -fsSL --retry 3 -o raw/names.csv https://cricsheet.org/register/names.csv
           ls -la raw
