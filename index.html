@@ -4,6 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SIXER · The daily cricket quiz</title>
+<meta name="description" content="The daily cricket quiz where the obvious answer only gets you a single. One over, six balls, a new one every day.">
+<meta name="theme-color" content="#0b1026">
+<link rel="canonical" href="https://cc81-pz.github.io/Sixer/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SIXER">
+<meta property="og:title" content="SIXER · The daily cricket quiz">
+<meta property="og:description" content="Six questions. The obvious answer only gets you a single. Can you clear the rope?">
+<meta property="og:url" content="https://cc81-pz.github.io/Sixer/">
+<meta property="og:image" content="https://cc81-pz.github.io/Sixer/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SIXER · The daily cricket quiz">
+<meta name="twitter:description" content="Six questions. The obvious answer only gets you a single. Can you clear the rope?">
+<meta name="twitter:image" content="https://cc81-pz.github.io/Sixer/og.jpg">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1026'/%3E%3Ccircle cx='32' cy='32' r='17' fill='%23ff4f8b'/%3E%3Cpath d='M22 19c6 8 6 18 0 26M42 19c-6 8-6 18 0 26' fill='none' stroke='%23ffd0e0' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,800;1,800;1,900&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -110,7 +127,9 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .table-ranks div{display:flex;justify-content:space-between;padding:5px 0;font-size:14px;border-top:1px dashed var(--line)}
 .table-ranks div:first-child{border-top:0}
 .table-ranks .me{color:var(--lime);font-weight:700}
-.share-pre{background:var(--night2);border-radius:10px;padding:12px;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:13px;white-space:pre-wrap;margin-bottom:10px}
+.share-pre{background:var(--night2);border-radius:10px;padding:12px;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word;margin-bottom:10px}
+.share-img{width:100%;aspect-ratio:4/5;border-radius:12px;display:block;margin-bottom:10px;background:var(--night2);border:1px solid var(--line)}
+.share-hint{font-size:12px;color:var(--dim);text-align:center;margin-top:10px;min-height:16px}
 .share-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .wa{background:#25d366;color:#05300f;text-decoration:none;text-align:center}
 .next{text-align:center;color:var(--dim);font-size:14px;margin-top:16px}
@@ -205,14 +224,15 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
       <div id="ftBalls"></div>
     </div>
     <div class="card">
-      <h3><span>Share with the group</span></h3>
-      <div class="share-pre" id="sharePre"></div>
-      <img id="shareImg" alt="Your SIXER scorecard" style="width:100%;border-radius:12px;display:block;margin-bottom:10px">
-      <button class="btn" id="shareBtn" style="margin-bottom:8px;font-size:20px;padding:12px">Share image + link</button>
+      <h3><span>Share with the group</span><span>No spoilers</span></h3>
+      <img id="shareImg" class="share-img" alt="Your SIXER scorecard">
+      <button class="btn" id="shareBtn" style="margin-bottom:8px;font-size:20px;padding:13px">Share scorecard</button>
       <div class="share-row">
-        <button class="btn ghost" id="copyBtn">Copy</button>
         <a class="btn ghost wa" id="waBtn" href="#" target="_blank" rel="noopener">WhatsApp</a>
+        <button class="btn ghost" id="copyBtn">Copy text</button>
       </div>
+      <div class="share-hint" id="shareHint"></div>
+      <div class="share-pre" id="sharePre" style="margin:10px 0 0"></div>
     </div>
     <div class="card table-ranks" id="ranksTable"><h3><span>The table</span><span>Runs</span></h3></div>
     <div class="next" id="nextInfo"></div>
@@ -547,7 +567,8 @@ function overIdx(n){ return (n-1)%OVERS.length; }
 const TODAY_IDX=(OVER_NO-1)%OVERS.length;
 const store={get(k,d){try{const v=localStorage.getItem('sixer:'+k);return v?JSON.parse(v):d}catch(e){return d}},
              set(k,v){try{localStorage.setItem('sixer:'+k,JSON.stringify(v))}catch(e){}}};
-const SHARE_URL = /claude/.test(location.hostname) || !/^https?:/.test(location.protocol) ? "" : location.origin + location.pathname;
+const SITE="https://cc81-pz.github.io/Sixer/"; // the link every share points at
+const SHARE_URL = /claude/.test(location.hostname) || !/^https?:/.test(location.protocol) ? SITE : location.origin + location.pathname;
 
 /* ============ CROWD DATA ============
    DUMMY NUMBERS until the backend exists. Everything the UI shows about other
@@ -760,32 +781,50 @@ function celebrate(runs,x,y){
     if(t<1.4) requestAnimationFrame(f); else { parts.forEach(p=>p.c.remove()); flash.remove(); } })(t0);
 }
 
-function shareImage(rk){
+async function fontsReady(){
+  if(!document.fonts||!document.fonts.load) return;
+  const need=['italic 900 64px "Barlow Condensed"','600 30px "IBM Plex Mono"'];
+  try{ await Promise.race([Promise.all(need.map(f=>document.fonts.load(f))), new Promise(r=>setTimeout(r,1800))]); }catch(e){}
+}
+function shareImage(g,rk){
   const W=1080,H=1350,c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
-  const g=x.createRadialGradient(W/2,0,50,W/2,0,H); g.addColorStop(0,'#26306a'); g.addColorStop(.6,'#0b1026'); x.fillStyle=g; x.fillRect(0,0,W,H);
+  const bg=x.createRadialGradient(W/2,0,50,W/2,0,H); bg.addColorStop(0,'#26306a'); bg.addColorStop(.6,'#0b1026'); x.fillStyle=bg; x.fillRect(0,0,W,H);
   const D='italic 900 ', F=' "Barlow Condensed","Arial Narrow",Arial,sans-serif', M=' "IBM Plex Mono",ui-monospace,monospace';
-  const cx=W/2, cy=900, sx=1.75;
-  x.fillStyle='#10173a'; x.beginPath(); x.ellipse(cx,cy,196*sx,160*sx,0,0,7); x.fill();
-  const fg=x.createRadialGradient(cx,cy-40,20,cx,cy,150*sx); fg.addColorStop(0,'#2a9a52'); fg.addColorStop(1,'#155d30');
-  x.fillStyle=fg; x.beginPath(); x.ellipse(cx,cy,150*sx,128*sx,0,0,7); x.fill();
-  x.strokeStyle='#f4f1e8'; x.lineWidth=5; x.beginPath(); x.ellipse(cx,cy,ROPE*1.1*sx,ROPE*.94*sx,0,0,7); x.stroke();
-  x.fillStyle='#c9b07a'; x.fillRect(cx-10,cy-45,20,90);
   const C={1:'#e8e8e8',2:'#ffd23f',4:'#4fb3ff',6:'#ff4f8b'};
-  G.results.forEach(r=>{ if(!r.runs) return; const [ex,ey]=endPoint(r.runs,r.ang); const px=cx+(ex-CX)*sx, py=cy+(ey-CY)*sx;
-    x.strokeStyle=C[r.runs]; x.lineWidth=r.runs>=4?10:7; x.lineCap='round'; x.beginPath(); x.moveTo(cx,cy); x.lineTo(px,py); x.stroke();
-    x.fillStyle=C[r.runs]; x.beginPath(); x.arc(px,py,13,0,7); x.fill(); });
-  x.textAlign='left'; x.fillStyle='#ff4f8b'; x.beginPath(); x.arc(92,104,22,0,7); x.fill();
-  x.fillStyle='#f4f1e8'; x.font=D+'64px'+F; x.fillText('SIXER',130,126);
-  x.textAlign='right'; x.fillStyle='#9aa3cc'; x.font='600 30px'+M;
-  x.fillText('OVER #'+G.overNo, W-70,118);
-  x.textAlign='center'; x.fillStyle='#c8f560'; x.font=D+'230px'+F; x.fillText(G.total,W/2-40,380);
-  x.fillStyle='#9aa3cc'; x.font=D+'64px'+F; x.textAlign='left'; x.fillText('/36',W/2-40+x.measureText('').width+ (G.total>9?120:70),380);
-  x.textAlign='center'; x.fillStyle='#f4f1e8'; x.font=D+'78px'+F; x.fillText(rk[1].toUpperCase(),W/2,470);
-  G.results.forEach((r,i)=>{ const bx=W/2+(i-2.5)*120, by=570; x.beginPath(); x.arc(bx,by,44,0,7);
+  // header
+  x.textBaseline='alphabetic';
+  x.fillStyle='#ff4f8b'; x.shadowColor='#ff4f8b'; x.shadowBlur=28; x.beginPath(); x.arc(94,104,22,0,7); x.fill(); x.shadowBlur=0;
+  x.textAlign='left'; x.fillStyle='#f4f1e8'; x.font=D+'64px'+F; x.fillText('SIXER',132,127);
+  x.textAlign='right'; x.fillStyle='#9aa3cc'; x.font='600 30px'+M; x.fillText(('OVER #'+g.overNo+' · '+dayDate(g.overNo)).toUpperCase(), W-70,118);
+  // score, with /36 sat properly beside it
+  x.textAlign='left'; x.font=D+'230px'+F; const tw=x.measureText(String(g.total)).width;
+  x.font=D+'70px'+F; const sw=x.measureText('/36').width, gap=22, left=(W-(tw+gap+sw))/2;
+  x.fillStyle='#c8f560'; x.font=D+'230px'+F; x.fillText(g.total,left,360);
+  x.fillStyle='#9aa3cc'; x.font=D+'70px'+F; x.fillText('/36',left+tw+gap,360);
+  x.textAlign='center'; x.fillStyle='#f4f1e8'; x.font=D+'80px'+F; x.fillText(rk[1].toUpperCase(),W/2,452);
+  // percentile pill
+  if(g.beat){ const label='BETTER THAN '+g.beat+'% OF PLAYERS'; x.font='600 30px'+M; const pw=x.measureText(label).width+64, px=(W-pw)/2, py=486, ph=60;
+    x.beginPath(); if(x.roundRect) x.roundRect(px,py,pw,ph,30); else x.rect(px,py,pw,ph);
+    x.fillStyle='rgba(200,245,96,.12)'; x.fill(); x.strokeStyle='rgba(200,245,96,.55)'; x.lineWidth=2; x.stroke();
+    x.fillStyle='#c8f560'; x.fillText(label,W/2,py+41); }
+  // the over, ball by ball
+  g.results.forEach((r,i)=>{ const bx=W/2+(i-2.5)*118, by=g.beat?628:590; x.beginPath(); x.arc(bx,by,43,0,7);
     x.fillStyle=r.runs?C[r.runs]:'#3a0f1c'; x.fill(); if(!r.runs){x.strokeStyle='#ff4f6b';x.lineWidth=4;x.stroke();}
     x.fillStyle=r.runs===6?'#fff':r.runs?'#111':'#ff8aa8'; x.font='600 40px'+M; x.fillText(r.runs||'W',bx,by+14); });
-  x.fillStyle='#f4f1e8'; x.font=D+'52px'+F; x.fillText('CAN YOU BEAT IT?',W/2,1250);
-  x.fillStyle='#c8f560'; x.font='600 34px'+M; x.fillText((SHARE_URL||'cc81-pz.github.io/Sixer/').replace(/^https?:\/\//,''),W/2,1306);
+  // wagon wheel
+  const cx=W/2, cy=942, k=1.5;
+  x.fillStyle='#10173a'; x.beginPath(); x.ellipse(cx,cy,196*k,160*k,0,0,7); x.fill();
+  const fg=x.createRadialGradient(cx,cy-40,20,cx,cy,150*k); fg.addColorStop(0,'#2a9a52'); fg.addColorStop(1,'#155d30');
+  x.fillStyle=fg; x.beginPath(); x.ellipse(cx,cy,150*k,128*k,0,0,7); x.fill();
+  x.strokeStyle='#f4f1e8'; x.lineWidth=5; x.beginPath(); x.ellipse(cx,cy,ROPE*1.1*k,ROPE*.94*k,0,0,7); x.stroke();
+  x.setLineDash([6,10]); x.strokeStyle='rgba(255,255,255,.35)'; x.lineWidth=2; x.beginPath(); x.ellipse(cx,cy,70*k,60*k,0,0,7); x.stroke(); x.setLineDash([]);
+  x.fillStyle='#c9b07a'; x.fillRect(cx-9,cy-39,18,78);
+  g.results.forEach(r=>{ if(!r.runs) return; const [ex,ey]=endPoint(r.runs,r.ang); const px=cx+(ex-CX)*k, py=cy+(ey-CY)*k;
+    x.strokeStyle=C[r.runs]; x.lineWidth=r.runs>=4?10:7; x.lineCap='round'; x.beginPath(); x.moveTo(cx,cy); x.lineTo(px,py); x.stroke();
+    x.fillStyle=C[r.runs]; x.beginPath(); x.arc(px,py,13,0,7); x.fill(); });
+  // call to action
+  x.fillStyle='#f4f1e8'; x.font=D+'54px'+F; x.fillText('CAN YOU BEAT IT?',W/2,1258);
+  x.fillStyle='#c8f560'; x.font='600 32px'+M; x.fillText(SHARE_URL.replace(/^https?:\/\//,'').replace(/\/$/,''),W/2,1308);
   return c;
 }
 
@@ -847,20 +886,38 @@ function renderFT(){
   });
   // share
   const emo={0:'🔴',1:'1️⃣',2:'2️⃣',4:'4️⃣',6:'6️⃣'};
-  const head = `SIXER · Over #${G.overNo} 🏏`;
-  const txt=`${head}\n${G.total} runs off 6 balls (${rk[1]})\n${G.results.map(r=>emo[r.runs]).join(' ')}\n${SHARE_URL.startsWith('http')?SHARE_URL:''}`.trim();
-  $('sharePre').textContent=txt;
+  const txt=[`SIXER · Over #${G.overNo} 🏏`,
+    `${G.total} run${G.total===1?'':'s'}`+(beat?` · better than ${beat}% of players`:` · ${rk[1]}`),
+    G.results.map(r=>emo[r.runs]).join(' '),
+    `Obvious answers only get a single. Can you beat it?`,
+    SHARE_URL].join('\n');
+  $('sharePre').textContent=txt; $('shareHint').textContent='';
   $('waBtn').href='https://wa.me/?text='+encodeURIComponent(txt);
-  $('copyBtn').onclick=async()=>{ try{ await navigator.clipboard.writeText(txt); $('copyBtn').textContent='Copied ✓'; }catch(e){ $('copyBtn').textContent='Select the text above'; } };
-  const durl=shareImage(rk).toDataURL('image/png'); $('shareImg').src=durl;
-  const bin=atob(durl.split(',')[1]), u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
-  const file=new File([u8],`sixer-over-${G.overNo}.png`,{type:'image/png'});
-  $('shareBtn').textContent='Share image + link';
-  $('shareBtn').onclick=async()=>{
-    const data={files:[file],text:txt};
-    if(navigator.canShare&&navigator.canShare(data)){ try{ await navigator.share(data); }catch(e){} return; }
-    const a=document.createElement('a'); a.href=durl; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
-    try{ await navigator.clipboard.writeText(txt); $('shareBtn').textContent='Image saved · text copied ✓'; }catch(e){ $('shareBtn').textContent='Image saved ✓'; }
+  const flash=(el,msg,back)=>{ el.textContent=msg; clearTimeout(el._h); el._h=setTimeout(()=>el.textContent=back,2200); };
+  const copyText=async()=>{ try{ await navigator.clipboard.writeText(txt); return true; }catch(e){ return false; } };
+  $('copyBtn').textContent='Copy text';
+  $('copyBtn').onclick=async()=>{ if(await copyText()) flash($('copyBtn'),'Copied ✓','Copy text'); else $('shareHint').textContent='Press and hold the text below to copy it.'; };
+  const g=G, img=$('shareImg'), sb=$('shareBtn'); let file=null, durl='';
+  img.removeAttribute('src'); sb.textContent='Share scorecard';
+  fontsReady().then(()=>{
+    if(G!==g) return;
+    durl=shareImage(g,rk).toDataURL('image/png'); img.src=durl;
+    const bin=atob(durl.split(',')[1]), u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
+    try{ file=new File([u8],`sixer-over-${g.overNo}.png`,{type:'image/png'}); }catch(e){ file=null; }
+  });
+  sb.onclick=async()=>{
+    // 1) native share sheet with the image, 2) share sheet with text only, 3) save image + copy text
+    if(navigator.share){
+      const withImg=file&&{files:[file],text:txt};
+      try{
+        if(withImg&&navigator.canShare&&navigator.canShare(withImg)){ await navigator.share(withImg); return; }
+        await navigator.share({text:txt}); return;
+      }catch(e){ if(e&&e.name==='AbortError') return; }
+    }
+    if(durl){ const a=document.createElement('a'); a.href=durl; a.download=`sixer-over-${g.overNo}.png`; document.body.appendChild(a); a.click(); a.remove(); }
+    const copied=await copyText();
+    $('shareHint').textContent = durl ? (copied?'Image saved and text copied. Paste both into the chat.':'Image saved. Copy the text below to go with it.')
+                                      : (copied?'Text copied. Paste it into the chat.':'Press and hold the text below to copy it.');
   };
   // ranks table
   const rt=$('ranksTable'); rt.innerHTML='<h3><span>The table</span><span>Runs</span></h3>';
