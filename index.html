@@ -116,6 +116,16 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .next{text-align:center;color:var(--dim);font-size:14px;margin-top:16px}
 .next b{color:var(--ink);font-family:"IBM Plex Mono"}
 .foot{text-align:center;color:#5d6699;font-size:11px;margin-top:26px;line-height:1.5}
+.crowd{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--dim)}
+.crowd b{color:var(--ink);font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-weight:600}
+.crowd .bar{height:5px;background:var(--night2);border-radius:3px;overflow:hidden;margin:7px 0 6px}
+.crowd .bar i{display:block;height:100%;border-radius:3px;min-width:4px}
+.pc{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim);margin-left:4px;font-style:normal}
+.ballrow .said{font-size:12px;color:var(--dim);margin-top:1px}
+.ft-crowd{display:inline-block;margin-top:12px;padding:8px 14px;border-radius:999px;background:rgba(200,245,96,.1);border:1px solid rgba(200,245,96,.35);font-size:14px;color:var(--ink)}
+.ft-crowd b{color:var(--lime);font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+.ft-rare{color:var(--dim);font-size:13px;margin-top:10px}
+.ft-rare b{color:var(--ink)}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .shake{animation:shake .25s}
 </style>
@@ -171,6 +181,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
     <div class="feedback" id="feedback">
       <div class="you" id="fbYou"></div>
       <div class="note" id="fbNote"></div>
+      <div class="crowd" id="fbCrowd"></div>
       <button class="btn" id="nextBtn" style="margin-top:12px">Next ball →</button>
     </div>
   </section>
@@ -181,6 +192,8 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
       <div class="runs display" id="ftRuns"></div>
       <div class="rank display" id="ftRank"></div>
       <div class="rankline" id="ftRankLine"></div>
+      <div class="ft-crowd" id="ftCrowd"></div>
+      <div class="ft-rare" id="ftRare"></div>
     </div>
     <div class="card">
       <h3><span>Wagon wheel</span><span id="ftOverLabel"></span></h3>
@@ -536,6 +549,47 @@ const store={get(k,d){try{const v=localStorage.getItem('sixer:'+k);return v?JSON
              set(k,v){try{localStorage.setItem('sixer:'+k,JSON.stringify(v))}catch(e){}}};
 const SHARE_URL = /claude/.test(location.hostname) || !/^https?:/.test(location.protocol) ? "" : location.origin + location.pathname;
 
+/* ============ CROWD DATA ============
+   DUMMY NUMBERS until the backend exists. Everything the UI shows about other
+   players comes through this one object, shaped like the tables it will read:
+     picks(over_no, qid, answer, share_pct)   -> Crowd.q()
+     plays(over_no, players, score spread)    -> Crowd.players(), Crowd.beat()
+   To go live, replace the bodies of these functions with fetched data.
+   The numbers are seeded, so every visitor sees the same figures. */
+function rng(seed){ let h=2166136261; for(const c of seed){ h^=c.charCodeAt(0); h=Math.imul(h,16777619); }
+  return ()=>{ h=(h+0x6D2B79F5)|0; let t=Math.imul(h^(h>>>15),1|h); t^=t+Math.imul(t^(t>>>7),61|t); return ((t^(t>>>14))>>>0)/4294967296; }; }
+function Phi(z){ const t=1/(1+.2316419*Math.abs(z)), d=.3989423*Math.exp(-z*z/2);
+  const p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274)))); return z>0?1-p:p; }
+function fmtPct(p){ return p>=9.95 ? Math.round(p)+'%' : p<.1 ? '<0.1%' : p.toFixed(1)+'%'; }
+const Crowd={
+  // share of players giving each answer to a question, plus the share bowled
+  q(q){
+    if(q._crowd) return q._crowd;
+    const r=rng('q:'+q.id), W={1:20,2:9,4:3.5,6:1};
+    const w=q.a.map(a=>W[a[1]]*(.7+r()*.6));
+    const sum=w.reduce((t,v)=>t+v,0);
+    const bowled=Math.max(3,26-sum*.25)+r()*4;
+    const pct=w.map(v=>v/sum*(100-bowled));
+    let top=0; pct.forEach((v,i)=>{ if(v>pct[top]) top=i; });
+    return q._crowd={pct,bowled,top};
+  },
+  pctFor(q,name){ const i=q.a.findIndex(a=>a[0]===name); return i<0?null:this.q(q).pct[i]; },
+  // players for an over; today's count climbs through the day
+  players(n){
+    const full=Math.round(1850+rng('day:'+n)()*1500);
+    if(n<OVER_NO) return full;
+    const d=new Date(), f=(d.getHours()*60+d.getMinutes())/1440;
+    return Math.max(41,Math.round(full*(.04+.96*Math.pow(f,1.15))));
+  },
+  // percentage of players a total beats, from the same per-answer shares
+  beat(n,total){
+    let mu=0,va=0;
+    OVERS[overIdx(n)].forEach(q=>{ const c=this.q(q); let e=0,e2=0;
+      q.a.forEach((a,i)=>{ const f=c.pct[i]/100; e+=f*a[1]; e2+=f*a[1]*a[1]; }); mu+=e; va+=e2-e*e; });
+    return Math.max(1,Math.min(99,Math.round(100*Phi((total-2-mu)/(Math.sqrt(va)*2.9)))));
+  }
+};
+
 /* ============ GROUND SVG ============ */
 const CX=200, CY=172, ROPE=128;
 function groundSVG(withStands=true){
@@ -659,6 +713,13 @@ function finishBall(i){
   $('fbYou').innerHTML = r.answer ? `You said <span style="color:${COL[r.runs]}">${r.answer}</span>` : 'No answer in time.';
   const tierCount=q.a.filter(a=>a[1]===6).length;
   $('fbNote').textContent = (r.note? r.note+' · ' : '') + `${q.a.length} correct answers, ${tierCount} of them worth a six.`;
+  const cr=Crowd.q(q), topA=q.a[cr.top];
+  const popular = (!r.answer || r.answer!==topA[0]) ? `Most popular: <b>${topA[0]}</b> · ${fmtPct(cr.pct[cr.top])}` : 'That was the most popular answer.';
+  if(r.answer){ const p=Crowd.pctFor(q,r.answer);
+    $('fbCrowd').innerHTML=`<b>${fmtPct(p)}</b> of players said this<div class="bar"><i style="width:${(p/cr.pct[cr.top]*100).toFixed(1)}%;background:${COL[r.runs]}"></i></div>${popular}`;
+  } else {
+    $('fbCrowd').innerHTML=`<b>${fmtPct(cr.bowled)}</b> of players were bowled by this one too<div class="bar"><i style="width:${(cr.bowled/cr.pct[cr.top]*100).toFixed(1)}%;max-width:100%;background:#ff6b8b"></i></div>${popular}`;
+  }
   $('nextBtn').textContent = G.ball===5 ? 'Close the innings →' : 'Next ball →';
   setTimeout(()=>{ $('feedback').classList.add('on'); renderTracker(); $('nextBtn').focus(); }, 500);
 }
@@ -747,6 +808,13 @@ function renderFT(){
   $('ftRuns').innerHTML=`${G.total}<small> /36</small>`;
   const rk=RANKS.find(r=>G.total>=r[0]); $('ftRank').textContent=rk[1]; $('ftRankLine').textContent=rk[2]+(G.total===36?' Six sixes!':'');
   $('ftOverLabel').textContent='OVER #'+G.overNo;
+  const isToday=G.overNo===OVER_NO, players=Crowd.players(G.overNo).toLocaleString('en-GB');
+  const beat=G.total>0 ? Crowd.beat(G.overNo,G.total) : 0; G.beat=beat;
+  $('ftCrowd').innerHTML = beat ? `Better than <b>${beat}%</b> of ${isToday?"today's ":''}<b>${players}</b> players`
+                                : `<b>${players}</b> players have faced this over${isToday?' today':''}`;
+  const qs0=OVERS[G.overIdx]; let rare=null;
+  G.results.forEach((r,i)=>{ if(!r.runs) return; const p=Crowd.pctFor(qs0[i],r.answer); if(p!==null && (!rare||p<rare.p)) rare={p,name:r.answer}; });
+  $('ftRare').innerHTML = rare ? `Rarest shot: <b>${rare.name}</b> · only ${fmtPct(rare.p)} said it` : '';
   // wagon wheel
   let w=groundSVG(false);
   G.results.forEach(r=>{ if(!r.runs) return; const [x,y]=endPoint(r.runs,r.ang);
@@ -760,16 +828,18 @@ function renderFT(){
     const q=qs[i]; const row=document.createElement('div'); row.className='ballrow';
     row.innerHTML=`<div class="n">${i+1}</div>
       <div><div class="t">${q.q}</div><div class="a" style="color:${r.runs?COL[r.runs]:'#ff6b8b'}">${r.answer||'Bowled'}</div>
+      <div class="said">${r.answer ? fmtPct(Crowd.pctFor(q,r.answer))+' of players said this' : fmtPct(Crowd.q(q).bowled)+' of players were bowled too'}</div>
       <button class="sheet-btn">All ${q.a.length} answers ↓</button></div>
       <div class="r" style="color:${r.runs?COL[r.runs]:'#ff6b8b'}">${r.runs||'W'}</div>
       <div class="sheet"></div>`;
     const sheet=row.querySelector('.sheet');
     let html='';
     [1,2,4,6].forEach(t=>{
-      const list=q.a.filter(a=>a[1]===t).map(a=>a[0]);
+      const cq=Crowd.q(q);
+      const list=q.a.map((a,j)=>[a,cq.pct[j]]).filter(e=>e[0][1]===t).sort((x,y)=>y[1]-x[1]);
       if(!list.length) return;
-      if(t===6 && hideSixes && r.runs!==6){ html+=`<div class="tg"><b style="color:${COL[6]}">6s</b><span class="hid">${list.length} hidden until tomorrow. Try them in the nets.</span></div>`; return; }
-      html+=`<div class="tg"><b style="color:${COL[t]}">${t}${t===1?'s':'s'}</b>${list.map(n=>n===r.answer?`<u>${n}</u>`:n).join(', ')}</div>`;
+      if(t===6 && hideSixes && r.runs!==6){ html+=`<div class="tg"><b style="color:${COL[6]}">6s</b><span class="hid">${list.length} hidden until tomorrow. No spoilers for the group chat.</span></div>`; return; }
+      html+=`<div class="tg"><b style="color:${COL[t]}">${t}s</b>${list.map(([a,p])=>(a[0]===r.answer?`<u>${a[0]}</u>`:a[0])+`<span class="pc">${fmtPct(p)}</span>`).join(', ')}</div>`;
     });
     sheet.innerHTML=html;
     row.querySelector('.sheet-btn').onclick=()=>sheet.classList.toggle('on');
