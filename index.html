@@ -47,6 +47,8 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .netbtn{display:flex;justify-content:space-between;align-items:center;text-align:left;margin-top:10px}
 .netbtn small{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-style:normal;font-weight:500;font-size:13px;opacity:.75;text-transform:none}
 .nets .btn{font-size:16px;padding:10px}
+.archive .btn{font-size:18px;padding:12px 14px;margin-top:8px}
+.archive .btn.played{opacity:.7}
 .sub{color:var(--dim);font-size:13px;text-align:center;margin:18px 0 6px}
 .done-note{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;margin-bottom:10px;font-size:14px;color:var(--dim)}
 
@@ -143,10 +145,10 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
       </div>
     </ul>
     <div id="dailyDone" class="done-note" style="display:none"></div>
-    <button class="btn" id="playDaily" style="display:none">Take guard →</button>
-    <p class="sub" id="netsLabel">In the nets: pick an over. Replay as often as you like.</p>
-    <div id="netsBtns"></div>
-    <p class="foot">Practice version · the daily over comes later<br>Questions checked up to the end of 2025</p>
+    <button class="btn" id="playDaily">Take guard →</button>
+    <p class="sub">Previous overs: catch up on any you missed</p>
+    <div id="archive" class="archive"></div>
+    <p class="foot">Friends &amp; family preview<br>Questions checked up to the end of 2025</p>
   </section>
 
   <!-- PLAY -->
@@ -192,11 +194,8 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
     <div class="card">
       <h3><span>Share with the group</span></h3>
       <div class="share-pre" id="sharePre"></div>
-      <div id="imgWrap" style="display:none;margin-bottom:10px;text-align:center">
-        <img id="shareImg" alt="Your SIXER scorecard" style="width:100%;border-radius:12px;display:block">
-        <p style="font-size:12px;color:var(--dim);margin-top:6px">Press and hold the image to save it, then post it in the group.</p>
-      </div>
-      <button class="btn" id="imgBtn" style="margin-bottom:8px;font-size:20px;padding:12px">Make share image</button>
+      <img id="shareImg" alt="Your SIXER scorecard" style="width:100%;border-radius:12px;display:block;margin-bottom:10px">
+      <button class="btn" id="shareBtn" style="margin-bottom:8px;font-size:20px;padding:12px">Share image + link</button>
       <div class="share-row">
         <button class="btn ghost" id="copyBtn">Copy</button>
         <a class="btn ghost wa" id="waBtn" href="#" target="_blank" rel="noopener">WhatsApp</a>
@@ -212,6 +211,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 /* ============ QUESTION BANK ============
    Each answer: [name, tier, aliases[], note]. Tier 1/2/4/6 is set editorially.
    people:true lets a unique first name or surname count on its own.  */
+const DHONI=["dhoni","msd","mahendra singh dhoni","mahi"], SACHIN=["sachin","tendulkar"], KOHLI=["kohli","virat"];
 const OVERS = [
  [ // ---------- OVER A ----------
   {id:"ipl-teams", q:"Name a franchise that has played in the IPL", s:"Any season 2008–2025 · renamed teams count under either name", people:false, a:[
@@ -321,6 +321,165 @@ const OVERS = [
    ["England",1],["India",1],["Australia",2],["Sri Lanka",2],["Pakistan",2],["New Zealand",2,["nz"]],["South Africa",2,["sa"]],
    ["West Indies",2,["windies","caribbean","barbados","jamaica","antigua","trinidad","guyana"],"2007"],["Bangladesh",4,[],"2011"],["Zimbabwe",4,[],"2003"],
    ["Kenya",6,[],"2003"],["Wales",6,[],"1983, 1999, 2019"],["Scotland",6,[],"1999"],["Ireland",6,[],"1999"],["Netherlands",6,["holland"],"1999"]]}
+ ],
+ [ // ---------- DAY 4 ----------
+  {id:"ipl-win-capt", q:"Name a captain who has lifted the IPL trophy", s:"Winning captains, 2008–2025", people:true, a:[
+   ["MS Dhoni",1,DHONI,"Five titles with CSK"],["Rohit Sharma",1,["rohit"],"Five titles with MI"],["Gautam Gambhir",2,["gambhir"],"KKR 2012 and 2014"],
+   ["Hardik Pandya",2,["hardik"],"GT 2022"],["Shreyas Iyer",2,["shreyas"],"KKR 2024"],["Rajat Patidar",4,["patidar"],"RCB 2025"],
+   ["David Warner",4,["warner"],"SRH 2016"],["Shane Warne",4,["warne"],"RR 2008"],["Adam Gilchrist",6,["gilchrist","gilly"],"Deccan Chargers 2009"]]},
+  {id:"ct-winners", q:"Name a country that has won the men's Champions Trophy", s:"Including the 1998 and 2000 KnockOut editions · up to 2025", a:[
+   ["India",1,[],"2002 (shared), 2013, 2025"],["Australia",2,[],"2006, 2009"],["Pakistan",2,[],"2017"],["Sri Lanka",4,["srilanka"],"2002 (shared)"],
+   ["West Indies",4,["windies","wi"],"2004"],["New Zealand",4,["nz"],"2000"],["South Africa",6,["sa","rsa"],"1998, the first edition"]]},
+  {id:"xi-2011", q:"Name a player in India's XI for the 2011 World Cup final", s:"v Sri Lanka, Wankhede, 2 April 2011", people:true, a:[
+   ["MS Dhoni",1,DHONI,"91* and the winning six"],["Sachin Tendulkar",1,SACHIN],["Yuvraj Singh",1,["yuvraj","yuvi"],"Player of the Tournament"],
+   ["Gautam Gambhir",2,["gambhir"],"Top score: 97"],["Virat Kohli",2,KOHLI],["Virender Sehwag",2,["sehwag","viru"]],["Zaheer Khan",2,["zaheer"]],
+   ["Harbhajan Singh",2,["harbhajan","bhajji"]],["Suresh Raina",4,["raina"]],["Sreesanth",4,["s sreesanth","sree"]],["Munaf Patel",6,["munaf"]]]},
+  {id:"test-10k", q:"Name a man who has scored 10,000 Test runs", s:"Up to the end of 2025", people:true, a:[
+   ["Sachin Tendulkar",1,SACHIN],["Ricky Ponting",1,["ponting"]],["Brian Lara",1,["lara"]],["Rahul Dravid",1,["dravid"]],["Joe Root",2,["root"]],
+   ["Jacques Kallis",2,["kallis"]],["Alastair Cook",2,["cook","alistair cook"]],["Kumar Sangakkara",2,["sangakkara","sanga"]],
+   ["Sunil Gavaskar",2,["gavaskar","sunny"],"The first to 10,000, in 1987"],["Steve Smith",2,["smith","steven smith"]],["Mahela Jayawardene",4,["jayawardene","mahela"]],
+   ["Allan Border",4,["border"]],["Steve Waugh",4,["waugh"]],["Shivnarine Chanderpaul",4,["chanderpaul","shiv chanderpaul"]],["Younis Khan",6,["younis","younus khan"]]]},
+  {id:"ranji", q:"Name a team that has won the Ranji Trophy since 2000", s:"Champions from 2000–01 to 2024–25", a:[
+   ["Mumbai",1,["bombay"],"Eight titles in this period"],["Vidarbha",2,[],"2017–18, 2018–19, 2024–25"],["Karnataka",2,[],"2013–14, 2014–15"],
+   ["Saurashtra",4,[],"2019–20, 2022–23"],["Delhi",4,[],"2007–08"],["Rajasthan",4,[],"2010–11, 2011–12"],["Gujarat",4,[],"2016–17"],
+   ["Madhya Pradesh",4,["mp"],"2021–22"],["Railways",6,[],"2001–02, 2004–05"],["Baroda",6,[],"2000–01"],["Uttar Pradesh",6,["up"],"2005–06"]]},
+  {id:"wc-hattrick", q:"Name a bowler who has taken a hat-trick at a men's ODI World Cup", s:"1975–2023", people:true, a:[
+   ["Mohammed Shami",2,["shami"],"v Afghanistan, 2019"],["Lasith Malinga",2,["malinga"],"Twice: 2007 and 2011"],["Chetan Sharma",4,["chetan"],"The first, in 1987"],
+   ["Brett Lee",4,["lee"],"2003"],["Chaminda Vaas",4,["vaas"],"First three balls of the match, 2003"],["Trent Boult",4,["boult"],"2019"],
+   ["Saqlain Mushtaq",6,["saqlain"],"1999"],["Kemar Roach",6,["roach"],"2011"],["Steven Finn",6,["finn","steve finn"],"2015"],["JP Duminy",6,["duminy","jean paul duminy"],"2015"]]}
+ ],
+ [ // ---------- DAY 5 ----------
+  {id:"t20wc-winners", q:"Name a country that has won the men's T20 World Cup", s:"2007–2024", a:[
+   ["India",1,[],"2007, 2024"],["England",2,[],"2010, 2022"],["West Indies",2,["windies","wi"],"2012, 2016"],["Australia",2,[],"2021"],
+   ["Pakistan",4,[],"2009"],["Sri Lanka",4,["srilanka"],"2014"]]},
+  {id:"xi-2007", q:"Name a player in India's XI for the 2007 T20 World Cup final", s:"v Pakistan, Johannesburg, 24 September 2007", people:true, a:[
+   ["MS Dhoni",1,DHONI,"Captain"],["Yuvraj Singh",1,["yuvraj","yuvi"]],["Gautam Gambhir",2,["gambhir"],"Top score: 75"],["Rohit Sharma",2,["rohit"]],
+   ["Sreesanth",2,["s sreesanth","sree"],"Took the final catch"],["Irfan Pathan",2,["irfan"],"Player of the Match"],["Harbhajan Singh",2,["harbhajan","bhajji"]],
+   ["Joginder Sharma",4,["joginder"],"Bowled the last over"],["RP Singh",4,["rudra pratap singh","r p singh"]],["Robin Uthappa",4,["uthappa"]],["Yusuf Pathan",6,["yusuf"],"His India debut"]]},
+  {id:"eng-capt", q:"Name a man who has captained England in a Test since 2003", s:"Including stand-in captains · up to 2025", people:true, a:[
+   ["Ben Stokes",1,["stokes"]],["Joe Root",1,["root"]],["Alastair Cook",1,["cook","alistair cook"]],["Michael Vaughan",2,["vaughan"]],
+   ["Andrew Strauss",2,["strauss"]],["Andrew Flintoff",2,["flintoff","freddie flintoff","freddie"]],["Nasser Hussain",4,["hussain","nasser"]],
+   ["Kevin Pietersen",4,["pietersen","kp"]],["Ollie Pope",4,["pope"],"Stand-in, 2024"],["Marcus Trescothick",6,["trescothick","tres"],"Two Tests as stand-in"]]},
+  {id:"aus-grounds", q:"Name a ground in Australia that has hosted a men's Test", s:"Up to the end of 2025", a:[
+   ["Melbourne Cricket Ground",1,["mcg","melbourne"]],["Sydney Cricket Ground",1,["scg","sydney"]],["The Gabba",1,["gabba","brisbane","brisbane cricket ground","woolloongabba"]],
+   ["Adelaide Oval",1,["adelaide"]],["Perth Stadium",2,["optus stadium","optus"],"Since 2018"],["WACA Ground",2,["waca"]],
+   ["Bellerive Oval",4,["bellerive","hobart","blundstone arena","ninja stadium"]],["Manuka Oval",6,["manuka","canberra"],"One Test, 2019"],
+   ["Cazaly's Stadium",6,["cazalys","cairns"],"2003 and 2004"],["Marrara Oval",6,["marrara","darwin"],"2003 and 2004"],["Exhibition Ground",6,["brisbane exhibition ground"],"Brisbane, 1928"]]},
+  {id:"wc-final-100", q:"Name a man who has scored a century in a men's ODI World Cup final", s:"1975–2023", people:true, a:[
+   ["Travis Head",1,["head"],"137 in 2023"],["Ricky Ponting",2,["ponting"],"140* in 2003"],["Adam Gilchrist",2,["gilchrist","gilly"],"149 in 2007"],
+   ["Viv Richards",4,["richards","vivian richards","sir viv"],"138* in 1979"],["Mahela Jayawardene",4,["jayawardene","mahela"],"103* in 2011"],
+   ["Aravinda de Silva",4,["de silva","aravinda"],"107* in 1996"],["Clive Lloyd",6,["lloyd"],"102 in 1975"]]},
+  {id:"odi-400", q:"Name a bowler with 400 or more ODI wickets", s:"Up to the end of 2025", people:true, a:[
+   ["Muttiah Muralidaran",1,["muralidaran","murali","muralitharan"],"534"],["Wasim Akram",1,["wasim","akram"],"502"],
+   ["Waqar Younis",2,["waqar"],"416"],["Chaminda Vaas",6,["vaas"],"400 exactly"]]}
+ ],
+ [ // ---------- DAY 6 ----------
+  {id:"u19-winners", q:"Name a country that has won the men's Under-19 World Cup", s:"1988–2024", a:[
+   ["India",1,[],"Five titles"],["Australia",2,[],"1988, 2002, 2010, 2024"],["Pakistan",4,[],"2004, 2006"],["England",4,[],"1998"],
+   ["South Africa",4,["sa","rsa"],"2014"],["West Indies",4,["windies","wi"],"2016"],["Bangladesh",6,[],"2020"]]},
+  {id:"ind-odi-capt", q:"Name a man who has captained India in an ODI since 2000", s:"Including stand-in captains · up to 2025", people:true, a:[
+   ["MS Dhoni",1,DHONI],["Virat Kohli",1,KOHLI],["Rohit Sharma",1,["rohit"]],["Sourav Ganguly",1,["ganguly","dada"]],["Rahul Dravid",2,["dravid"]],
+   ["Shubman Gill",2,["gill"],"Took over in 2025"],["KL Rahul",2,["kl","lokesh rahul"]],["Sachin Tendulkar",2,SACHIN],["Virender Sehwag",4,["sehwag"]],
+   ["Gautam Gambhir",4,["gambhir"]],["Suresh Raina",4,["raina"]],["Ajinkya Rahane",4,["rahane","jinx"]],["Shikhar Dhawan",4,["dhawan","gabbar"]],["Hardik Pandya",4,["hardik"]]]},
+  {id:"ten-in-inns", q:"Name a bowler who has taken all 10 wickets in a Test innings", s:"Men's Tests, up to 2025", people:true, a:[
+   ["Anil Kumble",1,["kumble","jumbo"],"10 for 74 v Pakistan, Delhi, 1999"],["Jim Laker",4,["laker"],"10 for 53 v Australia, 1956"],
+   ["Ajaz Patel",4,["ajaz","azaz patel"],"10 for 119 v India, Wankhede, 2021"]]},
+  {id:"t20wc-final-grounds", q:"Name a ground that has hosted a men's T20 World Cup final", s:"2007–2024", a:[
+   ["Kensington Oval",2,["kensington","barbados","bridgetown"],"2010 and 2024"],["Melbourne Cricket Ground",2,["mcg","melbourne"],"2022"],
+   ["Eden Gardens",2,["eden","kolkata"],"2016"],["Lord's",2,["lords","lords cricket ground"],"2009"],["Wanderers Stadium",4,["wanderers","johannesburg","the wanderers"],"2007"],
+   ["Dubai International Stadium",4,["dubai","dubai international cricket stadium"],"2021"],["R. Premadasa Stadium",6,["premadasa","r premadasa","colombo","khettarama"],"2012"],
+   ["Sher-e-Bangla National Stadium",6,["sher e bangla","mirpur","dhaka","shere bangla"],"2014"]]},
+  {id:"ind-300", q:"Name an Indian bowler with 300 or more Test wickets", s:"Up to the end of 2025", people:true, a:[
+   ["Anil Kumble",1,["kumble","jumbo"],"619"],["Ravichandran Ashwin",1,["ashwin","r ashwin","ash"],"537"],["Kapil Dev",1,["kapil"],"434"],
+   ["Harbhajan Singh",2,["harbhajan","bhajji"],"417"],["Ravindra Jadeja",2,["jadeja","jaddu"]],["Zaheer Khan",4,["zaheer"],"311"],["Ishant Sharma",4,["ishant"],"311"]]},
+  {id:"bbl", q:"Name a team that has won the Big Bash League", s:"2011–12 to 2024–25", a:[
+   ["Perth Scorchers",2,["scorchers","perth"],"Five titles"],["Sydney Sixers",2,["sixers"],"Three titles"],["Brisbane Heat",4,["heat","brisbane"],"2012–13, 2023–24"],
+   ["Sydney Thunder",4,["thunder"],"2015–16"],["Adelaide Strikers",4,["strikers","adelaide"],"2017–18"],["Melbourne Renegades",4,["renegades"],"2018–19"],
+   ["Hobart Hurricanes",6,["hurricanes","hobart"],"2024–25"]]}
+ ],
+ [ // ---------- DAY 7 ----------
+  {id:"xi-1983", q:"Name a player in India's XI for the 1983 World Cup final", s:"v West Indies, Lord's, 25 June 1983", people:true, a:[
+   ["Kapil Dev",1,["kapil"],"Captain"],["Sunil Gavaskar",1,["gavaskar","sunny"]],["Kris Srikkanth",2,["srikkanth","srikanth","cheeka","krishnamachari srikkanth"],"Top score: 38"],
+   ["Mohinder Amarnath",2,["amarnath","jimmy amarnath"],"Player of the Match"],["Roger Binny",4,["binny"]],["Madan Lal",4,["madan"],"Took the wicket of Viv Richards"],
+   ["Syed Kirmani",4,["kirmani"]],["Sandeep Patil",4,["patil"]],["Yashpal Sharma",6,["yashpal"]],["Kirti Azad",6,["azad","kirti"]],["Balwinder Sandhu",6,["sandhu"],"Bowled Greenidge"]]},
+  {id:"wc-finalists", q:"Name a country that has played in a men's ODI World Cup final", s:"1975–2023", a:[
+   ["India",1,[],"1983, 2003, 2011, 2023"],["Australia",1,[],"Eight finals"],["England",2,[],"1979, 1987, 1992, 2019"],["West Indies",2,["windies","wi"],"1975, 1979, 1983"],
+   ["New Zealand",2,["nz"],"2015, 2019"],["Sri Lanka",4,["srilanka"],"1996, 2007, 2011"],["Pakistan",4,[],"1992, 1999"]]},
+  {id:"tests-150", q:"Name a man who has played 150 or more Tests", s:"Up to the end of 2025", people:true, a:[
+   ["Sachin Tendulkar",1,SACHIN,"200"],["James Anderson",2,["anderson","jimmy anderson"],"188"],["Joe Root",2,["root"]],["Ricky Ponting",2,["ponting"],"168"],
+   ["Rahul Dravid",2,["dravid"]],["Alastair Cook",2,["cook","alistair cook"],"161"],["Steve Waugh",4,["waugh"],"168"],["Jacques Kallis",4,["kallis"]],
+   ["Stuart Broad",4,["broad"],"167"],["Allan Border",4,["border"],"156"],["Shivnarine Chanderpaul",6,["chanderpaul"],"164"]]},
+  {id:"t20wc-100", q:"Name a man who has scored a century at a men's T20 World Cup", s:"2007–2024", people:true, a:[
+   ["Chris Gayle",2,["gayle"],"The only man with two"],["Suresh Raina",2,["raina"],"2010"],["Jos Buttler",2,["buttler"],"2021"],
+   ["Brendon McCullum",4,["mccullum","baz"],"2012"],["Mahela Jayawardene",4,["jayawardene","mahela"],"2010"],["Alex Hales",4,["hales"],"2014"],
+   ["Glenn Phillips",4,["phillips"],"2022"],["Rilee Rossouw",6,["rossouw","riley rossouw"],"2022"],["Ahmed Shehzad",6,["shehzad"],"2014"],["Tamim Iqbal",6,["tamim"],"2016"]]},
+  {id:"ind-hattrick", q:"Name an Indian bowler who has taken a Test hat-trick", s:"Men's Tests, up to 2025", people:true, a:[
+   ["Harbhajan Singh",2,["harbhajan","bhajji"],"v Australia, Eden Gardens, 2001"],["Jasprit Bumrah",2,["bumrah"],"v West Indies, Kingston, 2019"],
+   ["Irfan Pathan",4,["irfan"],"In the first over of the match v Pakistan, Karachi, 2006"]]},
+  {id:"afg-wc", q:"Name a team Afghanistan have beaten at a men's ODI World Cup", s:"2015–2023", a:[
+   ["England",2,[],"Delhi, 2023"],["Pakistan",2,[],"Chennai, 2023"],["Sri Lanka",4,["srilanka"],"Pune, 2023"],["Netherlands",4,["holland","dutch"],"Lucknow, 2023"],
+   ["Scotland",6,[],"Their first win, Dunedin, 2015"]]}
+ ],
+ [ // ---------- DAY 8 ----------
+  {id:"xi-2024", q:"Name a player in India's XI for the 2024 T20 World Cup final", s:"v South Africa, Barbados, 29 June 2024", people:true, a:[
+   ["Rohit Sharma",1,["rohit"],"Captain"],["Virat Kohli",1,KOHLI,"76, Player of the Match"],["Jasprit Bumrah",1,["bumrah"]],["Hardik Pandya",2,["hardik"]],
+   ["Suryakumar Yadav",2,["suryakumar","sky","surya"],"The boundary catch to remove Miller"],["Rishabh Pant",2,["pant"]],["Ravindra Jadeja",2,["jadeja","jaddu"]],
+   ["Axar Patel",4,["axar","akshar patel"]],["Shivam Dube",4,["dube"]],["Arshdeep Singh",4,["arshdeep"]],["Kuldeep Yadav",4,["kuldeep"]]]},
+  {id:"wwc-winners", q:"Name a country that has won the women's ODI World Cup", s:"1973–2025", a:[
+   ["Australia",1,[],"Seven titles"],["India",1,[],"2025, at home"],["England",2,[],"Four titles"],["New Zealand",6,["nz"],"2000"]]},
+  {id:"aus-capt", q:"Name a man who has captained Australia in a Test since 2000", s:"Including stand-in captains · up to 2025", people:true, a:[
+   ["Ricky Ponting",1,["ponting"]],["Pat Cummins",1,["cummins"]],["Steve Smith",1,["smith","steven smith"]],["Michael Clarke",2,["clarke","pup"]],
+   ["Steve Waugh",2,["waugh"]],["Tim Paine",4,["paine"]],["Adam Gilchrist",4,["gilchrist","gilly"]],["Shane Watson",6,["watson"],"One Test, Delhi, 2013"]]},
+  {id:"t20wc-potm", q:"Name a Player of the Match in a men's T20 World Cup final", s:"2007–2024", people:true, a:[
+   ["Virat Kohli",1,KOHLI,"2024"],["Shahid Afridi",2,["afridi"],"2009"],["Sam Curran",2,["curran"],"2022"],["Mitchell Marsh",2,["marsh","mitch marsh"],"2021"],
+   ["Marlon Samuels",4,["samuels"],"2012 and 2016"],["Kumar Sangakkara",4,["sangakkara","sanga"],"2014"],["Irfan Pathan",4,["irfan"],"2007"],["Craig Kieswetter",6,["kieswetter"],"2010"]]},
+  {id:"ind-pace-200", q:"Name an Indian fast bowler with 200 or more Test wickets", s:"Up to the end of 2025", people:true, a:[
+   ["Jasprit Bumrah",1,["bumrah"]],["Kapil Dev",1,["kapil"],"434"],["Zaheer Khan",2,["zaheer"],"311"],["Ishant Sharma",2,["ishant"],"311"],
+   ["Mohammed Shami",2,["shami"]],["Javagal Srinath",4,["srinath"],"236"]]},
+  {id:"csk-capt", q:"Name a man who has captained CSK in an IPL match", s:"Including stand-in captains · 2008–2025", people:true, a:[
+   ["MS Dhoni",1,DHONI],["Ruturaj Gaikwad",2,["ruturaj","gaikwad"]],["Ravindra Jadeja",4,["jadeja","jaddu"],"Eight matches in 2022"],["Suresh Raina",4,["raina","chinna thala"]]]}
+ ],
+ [ // ---------- DAY 9 ----------
+  {id:"kkr-capt", q:"Name a man who has captained KKR in an IPL match", s:"Including stand-in captains · 2008–2025", people:true, a:[
+   ["Gautam Gambhir",1,["gambhir"]],["Shreyas Iyer",2,["shreyas","iyer"]],["Sourav Ganguly",2,["ganguly","dada"]],["Dinesh Karthik",2,["karthik","dk"]],
+   ["Ajinkya Rahane",2,["rahane"]],["Eoin Morgan",4,["morgan"]],["Brendon McCullum",4,["mccullum","baz"],"2009"],["Nitish Rana",4,["rana"],"2023"]]},
+  {id:"ind-odi-10k", q:"Name an Indian with 10,000 or more ODI runs", s:"Up to the end of 2025", people:true, a:[
+   ["Sachin Tendulkar",1,SACHIN],["Virat Kohli",1,KOHLI],["Rohit Sharma",1,["rohit"]],["Sourav Ganguly",2,["ganguly","dada"]],["MS Dhoni",2,DHONI],["Rahul Dravid",4,["dravid"]]]},
+  {id:"home-loss", q:"Name a team that has beaten India in a home Test series since 2000", s:"Series played in India, 2000–2025", a:[
+   ["New Zealand",2,["nz"],"3–0 in 2024"],["Australia",2,[],"2004–05"],["England",4,[],"2012–13"],["South Africa",4,["sa","rsa"],"2000 and 2025"]]},
+  {id:"pace-400", q:"Name a fast bowler with 400 or more Test wickets", s:"Up to the end of 2025", people:true, a:[
+   ["James Anderson",1,["anderson","jimmy anderson"],"704"],["Stuart Broad",2,["broad"],"604"],["Glenn McGrath",2,["mcgrath"],"563"],["Dale Steyn",2,["steyn"],"439"],
+   ["Kapil Dev",2,["kapil"],"434"],["Wasim Akram",2,["wasim","akram"],"414"],["Mitchell Starc",2,["starc"]],["Courtney Walsh",4,["walsh"],"519"],
+   ["Richard Hadlee",4,["hadlee"],"431"],["Curtly Ambrose",4,["ambrose"],"405"]]},
+  {id:"rcb-capt", q:"Name a man who has captained RCB in an IPL match", s:"Including stand-in captains · 2008–2025", people:true, a:[
+   ["Virat Kohli",1,KOHLI],["Faf du Plessis",2,["du plessis","faf","duplessis"]],["Rajat Patidar",2,["patidar"],"Lifted the 2025 trophy"],
+   ["Anil Kumble",4,["kumble"]],["Daniel Vettori",4,["vettori"]],["Rahul Dravid",4,["dravid"],"The first, in 2008"],["Kevin Pietersen",4,["pietersen","kp"],"2009"],
+   ["Shane Watson",6,["watson"]],["Jitesh Sharma",6,["jitesh"],"Stand-in, 2025"]]},
+  {id:"ind-icc-capt", q:"Name a captain who has led India's men to an ICC trophy", s:"World Cups and Champions Trophies, up to 2025", people:true, a:[
+   ["MS Dhoni",1,DHONI,"2007, 2011, 2013"],["Kapil Dev",1,["kapil"],"1983"],["Rohit Sharma",1,["rohit"],"2024 and 2025"],["Sourav Ganguly",6,["ganguly","dada"],"2002 Champions Trophy, shared"]]}
+ ],
+ [ // ---------- DAY 10 ----------
+  {id:"ipl-winners", q:"Name a franchise that has won the IPL", s:"2008–2025", a:[
+   ["Chennai Super Kings",1,["csk","chennai"],"Five titles"],["Mumbai Indians",1,["mi","mumbai"],"Five titles"],
+   ["Royal Challengers Bengaluru",2,["rcb","royal challengers bangalore","bangalore","bengaluru","royal challengers"],"2025"],
+   ["Kolkata Knight Riders",2,["kkr","kolkata"],"2012, 2014, 2024"],["Gujarat Titans",2,["gt","titans"],"2022, their first season"],
+   ["Sunrisers Hyderabad",4,["srh","sunrisers","hyderabad"],"2016"],["Rajasthan Royals",4,["rr","rajasthan"],"2008"],["Deccan Chargers",6,["deccan","chargers"],"2009"]]},
+  {id:"wc23-cities", q:"Name a city that hosted a match at the 2023 men's ODI World Cup", s:"Warm-up matches don't count", a:[
+   ["Ahmedabad",1,[]],["Mumbai",1,["bombay"]],["Kolkata",1,["calcutta"]],["Delhi",2,["new delhi"]],["Chennai",2,["madras"]],["Bengaluru",2,["bangalore"]],
+   ["Pune",4,[]],["Lucknow",4,[]],["Hyderabad",4,[]],["Dharamsala",4,["dharamshala"]]]},
+  {id:"aus-xi-2023", q:"Name a player in Australia's XI for the 2023 World Cup final", s:"v India, Ahmedabad, 19 November 2023", people:true, a:[
+   ["Travis Head",1,["head"],"137, Player of the Match"],["Pat Cummins",1,["cummins"],"Captain"],["Glenn Maxwell",1,["maxwell","maxi"]],
+   ["David Warner",2,["warner"]],["Mitchell Starc",2,["starc"]],["Steve Smith",2,["smith","steven smith"]],["Marnus Labuschagne",2,["labuschagne","marnus"],"58*"],
+   ["Mitchell Marsh",4,["marsh","mitch marsh"]],["Josh Hazlewood",4,["hazlewood"]],["Adam Zampa",4,["zampa"]],["Josh Inglis",6,["inglis"]]]},
+  {id:"wt20-winners", q:"Name a country that has won the women's T20 World Cup", s:"2009–2024", a:[
+   ["Australia",1,[],"Six titles"],["England",2,[],"2009, the first"],["West Indies",4,["windies","wi"],"2016"],["New Zealand",4,["nz"],"2024"]]},
+  {id:"t20wc-capt", q:"Name a captain who has lifted the men's T20 World Cup", s:"2007–2024", people:true, a:[
+   ["MS Dhoni",1,DHONI,"2007"],["Rohit Sharma",1,["rohit"],"2024"],["Jos Buttler",2,["buttler"],"2022"],["Darren Sammy",2,["sammy"],"2012 and 2016"],
+   ["Aaron Finch",4,["finch"],"2021"],["Paul Collingwood",4,["collingwood","colly"],"2010"],["Younis Khan",4,["younis","younus khan"],"2009"],["Lasith Malinga",6,["malinga"],"2014"]]},
+  {id:"ind-2011-opp", q:"Name a team India played at the 2011 World Cup", s:"Any match on the way to the title", a:[
+   ["Sri Lanka",1,["srilanka"],"The final"],["Pakistan",1,[],"Semi-final, Mohali"],["Australia",1,[],"Quarter-final, Ahmedabad"],["England",2,[],"A tie in Bengaluru"],
+   ["South Africa",2,["sa","rsa"],"India's only defeat"],["West Indies",2,["windies","wi"]],["Bangladesh",2,[],"The opening match, Dhaka"],
+   ["Ireland",4,[]],["Netherlands",4,["holland","dutch"]]]}
  ]
 ];
 
@@ -367,13 +526,14 @@ function match(q,input){
 }
 
 /* ============ DAY / STORAGE ============ */
-const LAUNCH=new Date(2026,10,16);
+const LAUNCH=new Date(2026,10,7); // Over #1 day; today (16 Nov) is #10
 function dayNum(){ const t=new Date(); t.setHours(0,0,0,0); return Math.floor((t-LAUNCH)/864e5)+1; }
 const OVER_NO=Math.max(1,dayNum());
+function dayDate(n){ const d=new Date(LAUNCH); d.setDate(d.getDate()+n-1); return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}); }
+function overIdx(n){ return (n-1)%OVERS.length; }
 const TODAY_IDX=(OVER_NO-1)%OVERS.length;
 const store={get(k,d){try{const v=localStorage.getItem('sixer:'+k);return v?JSON.parse(v):d}catch(e){return d}},
              set(k,v){try{localStorage.setItem('sixer:'+k,JSON.stringify(v))}catch(e){}}};
-const DAILY_ON = false; // flip on at launch: one over a day, streaks, hidden sixes
 const SHARE_URL = /claude/.test(location.hostname) || !/^https?:/.test(location.protocol) ? "" : location.origin + location.pathname;
 
 /* ============ GROUND SVG ============ */
@@ -418,30 +578,22 @@ const BALL_SECS=20;
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id)); window.scrollTo(0,0); }
 
 function renderHome(){
-  if(!DAILY_ON){
-    $('hdrScore').innerHTML='';
-    const nb=$('netsBtns'); nb.innerHTML='';
-    OVERS.forEach((ov,i)=>{ const best=store.get('best-'+i,null); const b=document.createElement('button');
-      b.className='btn netbtn'+(i?' ghost':''); b.innerHTML=`<span>Over ${'ABC'[i]} →</span><small>${best!==null?'Best '+best+'/36':ov.length+' balls'}</small>`;
-      b.onclick=()=>start('nets',i); nb.appendChild(b); });
-    return;
-  }
-  $('playDaily').style.display='block'; $('netsBtns').className='nets';
-  $('netsLabel').textContent='Nets: play the other overs, which don\'t count towards your streak';
   const done=store.get('day-'+OVER_NO,null);
   $('playDaily').textContent = done ? 'See today\'s scorecard →' : `Take guard: Over #${OVER_NO} →`;
-  const dn=$('dailyDone');
-  if(done){ dn.style.display='block'; dn.innerHTML=`Today's over is done: <b style="color:var(--lime)">${done.total} runs</b>. The next over is out at midnight.`; }
-  const streak=store.get('streak',{n:0,last:0});
-  $('hdrScore').innerHTML = streak.n ? `STREAK<b>🔥 ${streak.n}</b>` : '';
-  const nb=$('netsBtns'); nb.innerHTML='';
-  OVERS.forEach((_,i)=>{ const b=document.createElement('button'); b.className='btn ghost'; b.textContent='Over '+'ABC'[i]+(i===TODAY_IDX?' (today)':'');
-    b.onclick=()=>start('nets',i); nb.appendChild(b); });
+  const dn=$('dailyDone'); dn.style.display=done?'block':'none';
+  if(done) dn.innerHTML=`Today's over is done: <b style="color:var(--lime)">${done.total} runs</b>. The next over is out at midnight.`;
+  const st=store.get('streak',{n:0,last:0});
+  $('hdrScore').innerHTML = st.n && st.last>=OVER_NO-1 ? `STREAK<b>🔥 ${st.n}</b>` : '';
+  const ar=$('archive'); ar.innerHTML='';
+  for(let n=OVER_NO-1;n>=1;n--){ const r=store.get('day-'+n,null); const b=document.createElement('button');
+    b.className='btn ghost netbtn'+(r?' played':'');
+    b.innerHTML=`<span>#${n} · ${dayDate(n)}</span><small>${r?r.total+' runs ✓':'Play →'}</small>`;
+    b.onclick=()=>start(n); ar.appendChild(b); }
 }
 
-function start(mode,overIdx){
-  if(mode==='daily'){ const done=store.get('day-'+OVER_NO,null); if(done){ G=done; renderFT(); return; } }
-  G={mode,overIdx,overNo:OVER_NO,ball:0,results:[],total:0};
+function start(n){
+  const done=store.get('day-'+n,null); if(done){ G=done; renderFT(); return; }
+  G={mode:'daily',overNo:n,overIdx:overIdx(n),ball:0,results:[],total:0};
   show('play'); startBall();
 }
 
@@ -456,7 +608,7 @@ function renderTracker(){
 function startBall(){
   const q=OVERS[G.overIdx][G.ball];
   G.misses=[]; G.locked=false;
-  $('ballNo').textContent=`BALL ${G.ball+1}/6 · ${G.mode==='daily'?'OVER #'+G.overNo:'NETS · OVER '+'ABC'[G.overIdx]}`;
+  $('ballNo').textContent=`BALL ${G.ball+1}/6 · OVER #${G.overNo}${G.overNo===OVER_NO?' · TODAY':''}`;
   $('qText').textContent=q.q; $('qSub').textContent=q.s;
   $('ground').innerHTML=groundSVG()+`<circle id="pball" cx="${CX}" cy="${CY+20}" r="4.5" fill="#ff4f8b" filter="url(#glow)"/>`;
   $('callout').classList.remove('show'); $('feedback').classList.remove('on'); $('missList').textContent='';
@@ -564,23 +716,23 @@ function shareImage(rk){
   x.textAlign='left'; x.fillStyle='#ff4f8b'; x.beginPath(); x.arc(92,104,22,0,7); x.fill();
   x.fillStyle='#f4f1e8'; x.font=D+'64px'+F; x.fillText('SIXER',130,126);
   x.textAlign='right'; x.fillStyle='#9aa3cc'; x.font='600 30px'+M;
-  x.fillText(G.mode==='daily'?'OVER #'+G.overNo:'NETS · OVER '+'ABC'[G.overIdx], W-70,118);
+  x.fillText('OVER #'+G.overNo, W-70,118);
   x.textAlign='center'; x.fillStyle='#c8f560'; x.font=D+'230px'+F; x.fillText(G.total,W/2-40,380);
   x.fillStyle='#9aa3cc'; x.font=D+'64px'+F; x.textAlign='left'; x.fillText('/36',W/2-40+x.measureText('').width+ (G.total>9?120:70),380);
   x.textAlign='center'; x.fillStyle='#f4f1e8'; x.font=D+'78px'+F; x.fillText(rk[1].toUpperCase(),W/2,470);
   G.results.forEach((r,i)=>{ const bx=W/2+(i-2.5)*120, by=570; x.beginPath(); x.arc(bx,by,44,0,7);
     x.fillStyle=r.runs?C[r.runs]:'#3a0f1c'; x.fill(); if(!r.runs){x.strokeStyle='#ff4f6b';x.lineWidth=4;x.stroke();}
     x.fillStyle=r.runs===6?'#fff':r.runs?'#111':'#ff8aa8'; x.font='600 40px'+M; x.fillText(r.runs||'W',bx,by+14); });
-  x.fillStyle='#9aa3cc'; x.font='500 34px'+M; x.fillText('Can you beat it?',W/2,1300);
-  return c.toDataURL('image/png');
+  x.fillStyle='#f4f1e8'; x.font=D+'52px'+F; x.fillText('CAN YOU BEAT IT?',W/2,1250);
+  x.fillStyle='#c8f560'; x.font='600 34px'+M; x.fillText((SHARE_URL||'cc81-pz.github.io/Sixer/').replace(/^https?:\/\//,''),W/2,1306);
+  return c;
 }
 
 $('nextBtn').onclick=()=>{
   if(G.ball<5){ G.ball++; startBall(); return; }
   G.finished=true;
-  if(G.mode==='nets'){ const k='best-'+G.overIdx; G.newBest = G.total > store.get(k,-1); if(G.newBest) store.set(k,G.total); }
-  if(G.mode==='daily'){
-    store.set('day-'+OVER_NO,G);
+  store.set('day-'+G.overNo,G);
+  if(G.overNo===OVER_NO){
     const st=store.get('streak',{n:0,last:0});
     store.set('streak',{n: st.last===OVER_NO-1 ? st.n+1 : (st.last===OVER_NO? st.n : 1), last:OVER_NO});
   }
@@ -594,7 +746,7 @@ function renderFT(){
   const st=store.get('streak',{n:0}); $('hdrScore').innerHTML = G.mode==='daily'&&st.n ? `STREAK<b>🔥 ${st.n}</b>` : `RUNS<b>${G.total}</b>`;
   $('ftRuns').innerHTML=`${G.total}<small> /36</small>`;
   const rk=RANKS.find(r=>G.total>=r[0]); $('ftRank').textContent=rk[1]; $('ftRankLine').textContent=rk[2]+(G.total===36?' Six sixes!':'');
-  $('ftOverLabel').textContent= G.mode==='daily' ? 'OVER #'+G.overNo : 'NETS · OVER '+'ABC'[G.overIdx];
+  $('ftOverLabel').textContent='OVER #'+G.overNo;
   // wagon wheel
   let w=groundSVG(false);
   G.results.forEach(r=>{ if(!r.runs) return; const [x,y]=endPoint(r.runs,r.ang);
@@ -603,7 +755,7 @@ function renderFT(){
   $('wagon').innerHTML=w;
   // balls
   const qs=OVERS[G.overIdx]; const box=$('ftBalls'); box.innerHTML='';
-  const hideSixes = G.mode==='daily';
+  const hideSixes = G.overNo===OVER_NO;
   G.results.forEach((r,i)=>{
     const q=qs[i]; const row=document.createElement('div'); row.className='ballrow';
     row.innerHTML=`<div class="n">${i+1}</div>
@@ -625,27 +777,35 @@ function renderFT(){
   });
   // share
   const emo={0:'🔴',1:'1️⃣',2:'2️⃣',4:'4️⃣',6:'6️⃣'};
-  const head = G.mode==='daily' ? `SIXER · Over #${G.overNo} 🏏` : `SIXER · Nets, Over ${'ABC'[G.overIdx]} 🏏`;
+  const head = `SIXER · Over #${G.overNo} 🏏`;
   const txt=`${head}\n${G.total} runs off 6 balls (${rk[1]})\n${G.results.map(r=>emo[r.runs]).join(' ')}\n${SHARE_URL.startsWith('http')?SHARE_URL:''}`.trim();
   $('sharePre').textContent=txt;
   $('waBtn').href='https://wa.me/?text='+encodeURIComponent(txt);
   $('copyBtn').onclick=async()=>{ try{ await navigator.clipboard.writeText(txt); $('copyBtn').textContent='Copied ✓'; }catch(e){ $('copyBtn').textContent='Select the text above'; } };
-  $('imgWrap').style.display='none'; $('imgBtn').style.display='block';
-  $('imgBtn').onclick=()=>{ $('shareImg').src=shareImage(rk); $('imgWrap').style.display='block'; $('imgBtn').style.display='none'; };
+  const durl=shareImage(rk).toDataURL('image/png'); $('shareImg').src=durl;
+  const bin=atob(durl.split(',')[1]), u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
+  const file=new File([u8],`sixer-over-${G.overNo}.png`,{type:'image/png'});
+  $('shareBtn').textContent='Share image + link';
+  $('shareBtn').onclick=async()=>{
+    const data={files:[file],text:txt};
+    if(navigator.canShare&&navigator.canShare(data)){ try{ await navigator.share(data); }catch(e){} return; }
+    const a=document.createElement('a'); a.href=durl; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
+    try{ await navigator.clipboard.writeText(txt); $('shareBtn').textContent='Image saved · text copied ✓'; }catch(e){ $('shareBtn').textContent='Image saved ✓'; }
+  };
   // ranks table
   const rt=$('ranksTable'); rt.innerHTML='<h3><span>The table</span><span>Runs</span></h3>';
   const bands=['30–36','22–29','14–21','7–13','0–6'];
   RANKS.forEach((r,i)=>{ const d=document.createElement('div'); if(r===rk) d.className='me'; d.innerHTML=`<span>${r[1]}</span><span class="mono">${bands[i]}</span>`; rt.appendChild(d); });
   // countdown
-  if(G.mode==='daily'){
+  if(G.overNo===OVER_NO){
     const upd=()=>{ const n=new Date(), m=new Date(n); m.setHours(24,0,0,0); const s=Math.floor((m-n)/1000);
       $('nextInfo').innerHTML=`Next over in <b>${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}</b>`; };
     upd(); clearInterval(window._cd); window._cd=setInterval(upd,1000);
-  } else $('nextInfo').textContent = G.newBest ? 'New personal best for this over.' : 'Best on this over: '+store.get('best-'+G.overIdx,G.total)+'/36';
+  } else { clearInterval(window._cd); $('nextInfo').textContent=`Catch-up over from ${dayDate(G.overNo)}.`; }
 }
 
-$('playDaily').onclick=()=>start('daily',TODAY_IDX);
-$('homeBtn').textContent='Back to the nets';
+$('playDaily').onclick=()=>start(OVER_NO);
+
 $('homeBtn').onclick=()=>{ clearInterval(window._cd); show('home'); renderHome(); };
 renderHome();
 </script>
