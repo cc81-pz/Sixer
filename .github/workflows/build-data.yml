@@ -33,6 +33,11 @@ jobs:
           curl -fsSL --retry 3 -o raw/people.csv https://cricsheet.org/register/people.csv
           curl -fsSL --retry 3 -o raw/names.csv https://cricsheet.org/register/names.csv
           ls -la raw
+          if ! unzip -tq raw/all_json.zip >/dev/null 2>&1; then
+            echo "::error::Cricsheet did not return a zip. What came back:"
+            head -c 3000 raw/all_json.zip | tr -d '\r' | sed 's/<[^>]*>/ /g' | tr -s ' \n' | head -c 1200
+            exit 1
+          fi
       - name: Build database
         run: python tools/build_db.py raw out
       - name: Publish to data branch
