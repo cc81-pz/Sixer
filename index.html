@@ -145,6 +145,18 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .ft-crowd b{color:var(--lime);font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
 .ft-rare{color:var(--dim);font-size:13px;margin-top:10px}
 .ft-rare b{color:var(--ink)}
+.btn.wa{background:#25d366;color:#05300f;border-color:#25d366}
+.share-hint:empty{display:none}
+button,a.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.livecount{text-align:center;font-size:13px;color:var(--dim);margin-top:12px}
+.livecount i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--lime);margin-right:7px;box-shadow:0 0 0 0 rgba(200,245,96,.6);animation:pulse 2s infinite}
+.livecount b{color:var(--ink);font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-weight:600}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(200,245,96,.55)}70%,100%{box-shadow:0 0 0 8px rgba(200,245,96,0)}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.stat{border-radius:10px;padding:10px 4px 8px;text-align:center;background:var(--panel);border:1px solid var(--line)}
+.stat b{display:block;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-style:italic;font-weight:900;font-size:28px;line-height:1;color:var(--lime)}
+.stat small{font-size:11px;color:var(--dim)}
+@media (prefers-reduced-motion:reduce){.livecount i,.shake{animation:none}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .shake{animation:shake .25s}
 </style>
@@ -175,7 +187,12 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
     </ul>
     <div id="dailyDone" class="done-note" style="display:none"></div>
     <button class="btn" id="playDaily">Take guard →</button>
-    <p class="sub">Previous overs: catch up on any you missed</p>
+    <p class="livecount" id="liveCount"></p>
+    <div id="statsWrap" style="display:none">
+      <p class="sub">Your record</p>
+      <div class="stats" id="stats"></div>
+    </div>
+    <p class="sub" id="archiveSub">Previous overs: catch up on the last week</p>
     <div id="archive" class="archive"></div>
     <p class="foot">Friends &amp; family preview<br>Questions checked up to the end of 2025</p>
   </section>
@@ -188,7 +205,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
     <div class="q" id="qText"></div>
     <div class="qs" id="qSub"></div>
     <form class="answer-row" id="answerForm" autocomplete="off">
-      <input id="answer" placeholder="Your answer…" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="go">
+      <input id="answer" aria-label="Your answer" placeholder="Your answer…" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="go">
       <button type="submit">Swing</button>
     </form>
     <div class="misses" id="missList"></div>
@@ -197,7 +214,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
       <div class="callout" id="callout"><div class="big display" id="calloutBig"></div><div class="small" id="calloutSmall"></div></div>
       <div class="miss" id="missToast"></div>
     </div>
-    <div class="feedback" id="feedback">
+    <div class="feedback" id="feedback" aria-live="polite">
       <div class="you" id="fbYou"></div>
       <div class="note" id="fbNote"></div>
       <div class="crowd" id="fbCrowd"></div>
@@ -653,21 +670,36 @@ const BALL_SECS=20;
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id)); window.scrollTo(0,0); }
 
 function renderHome(){
-  const done=store.get('day-'+OVER_NO,null);
-  $('playDaily').textContent = done ? 'See today\'s scorecard →' : `Take guard: Over #${OVER_NO} →`;
+  const done=store.get('day-'+OVER_NO,null), live=store.get('live-'+OVER_NO,null);
+  $('playDaily').textContent = done ? 'See today\'s scorecard →' : live ? `Resume Over #${OVER_NO} →` : `Take guard: Over #${OVER_NO} →`;
+  $('liveCount').innerHTML=`<i></i><b>${Crowd.players(OVER_NO).toLocaleString('en-GB')}</b> players so far today`;
+  const totals=[]; for(let n=1;n<=OVER_NO;n++){ const r=store.get('day-'+n,null); if(r) totals.push(r.total); }
+  $('statsWrap').style.display=totals.length?'block':'none';
+  if(totals.length){ const stn=store.get('streak',{n:0,last:0}), cur=stn.last>=OVER_NO-1?stn.n:0;
+    const cells=[[totals.length,'Played'],[(totals.reduce((a,b)=>a+b,0)/totals.length).toFixed(1),'Average'],[Math.max(...totals),'Best'],[cur,'Streak']];
+    $('stats').innerHTML=cells.map(c=>`<div class="stat"><b>${c[0]}</b><small>${c[1]}</small></div>`).join(''); }
   const dn=$('dailyDone'); dn.style.display=done?'block':'none';
   if(done) dn.innerHTML=`Today's over is done: <b style="color:var(--lime)">${done.total} runs</b>. The next over is out at midnight.`;
   const st=store.get('streak',{n:0,last:0});
   $('hdrScore').innerHTML = st.n && st.last>=OVER_NO-1 ? `STREAK<b>🔥 ${st.n}</b>` : '';
   const ar=$('archive'); ar.innerHTML='';
-  for(let n=OVER_NO-1;n>=1;n--){ const r=store.get('day-'+n,null); const b=document.createElement('button');
+  $('archiveSub').style.display=OVER_NO>1?'block':'none';
+  for(let n=OVER_NO-1;n>=Math.max(1,OVER_NO-7);n--){ const r=store.get('day-'+n,null), lv=!r&&store.get('live-'+n,null); const b=document.createElement('button');
     b.className='btn ghost netbtn'+(r?' played':'');
-    b.innerHTML=`<span>#${n} · ${dayDate(n)}</span><small>${r?r.total+' runs ✓':'Play →'}</small>`;
+    b.innerHTML=`<span>#${n} · ${dayDate(n)}</span><small>${r?r.total+' runs ✓':lv?'Resume →':'Play →'}</small>`;
     b.onclick=()=>start(n); ar.appendChild(b); }
 }
 
 function start(n){
   const done=store.get('day-'+n,null); if(done){ G=done; renderFT(); return; }
+  // An over in progress is resumed, never restarted: the clock keeps running while you are away.
+  const live=store.get('live-'+n,null);
+  if(live && live.overIdx===overIdx(n) && Array.isArray(live.results)){
+    G=live;
+    if(G.results[G.ball]){ if(G.ball>=5){ finishOver(); return; } G.ball++; show('play'); startBall(); }
+    else { show('play'); startBall(true); }
+    return;
+  }
   G={mode:'daily',overNo:n,overIdx:overIdx(n),ball:0,results:[],total:0};
   show('play'); startBall();
 }
@@ -680,17 +712,18 @@ function renderTracker(){
   $('hdrScore').innerHTML=`RUNS<b>${G.total}</b>`;
 }
 
-function startBall(){
+function saveLive(){ store.set('live-'+G.overNo,G); }
+function startBall(resume){
   const q=OVERS[G.overIdx][G.ball];
-  G.misses=[]; G.locked=false;
+  if(!resume || !G.deadline){ G.misses=[]; G.deadline=Date.now()+BALL_SECS*1000; }
+  G.locked=false; saveLive();
   $('ballNo').textContent=`BALL ${G.ball+1}/6 · OVER #${G.overNo}${G.overNo===OVER_NO?' · TODAY':''}`;
   $('qText').textContent=q.q; $('qSub').textContent=q.s;
   $('ground').innerHTML=groundSVG()+`<circle id="pball" cx="${CX}" cy="${CY+20}" r="4.5" fill="#ff4f8b" filter="url(#glow)"/>`;
-  $('callout').classList.remove('show'); $('feedback').classList.remove('on'); $('missList').textContent='';
+  $('callout').classList.remove('show'); $('feedback').classList.remove('on'); $('missList').textContent=G.misses.length?'Missed: '+G.misses.join(' · '):'';
   $('answerForm').style.display='flex';
   const inp=$('answer'); inp.value=''; inp.disabled=false; inp.focus();
   renderTracker();
-  G.deadline=Date.now()+BALL_SECS*1000;
   clearInterval(tick); tick=setInterval(updTimer,100); updTimer();
 }
 
@@ -710,7 +743,7 @@ $('answerForm').addEventListener('submit',e=>{
     const t=$('missToast'); t.textContent='✗ '+v+': play and a miss'; t.classList.add('show');
     clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1300);
     $('groundbox').classList.remove('shake'); void $('groundbox').offsetWidth; $('groundbox').classList.add('shake');
-    $('missList').textContent='Missed: '+G.misses.join(' · ');
+    $('missList').textContent='Missed: '+G.misses.join(' · '); saveLive();
     return;
   }
   finishBall(i);
@@ -724,7 +757,7 @@ function finishBall(i){
   let r;
   if(i===null){ r={qid:q.id,answer:null,runs:0,ang:0}; }
   else { const a=q.a[i]; r={qid:q.id,answer:a[0],runs:a[1],note:a[3]||'',ang:angleFor(a[0]+q.id)}; }
-  G.results[G.ball]=r; G.total+=r.runs;
+  G.results[G.ball]=r; G.total+=r.runs; saveLive();
   animateBall(r);
   const big=$('calloutBig'), small=$('calloutSmall');
   if(!r.runs){ big.textContent='Bowled!'; big.style.color='#ff6b8b'; small.textContent='Out of time · 0 runs'; }
@@ -830,14 +863,17 @@ function shareImage(g,rk){
 
 $('nextBtn').onclick=()=>{
   if(G.ball<5){ G.ball++; startBall(); return; }
+  finishOver();
+};
+function finishOver(){
   G.finished=true;
-  store.set('day-'+G.overNo,G);
+  store.set('day-'+G.overNo,G); store.set('live-'+G.overNo,null);
   if(G.overNo===OVER_NO){
     const st=store.get('streak',{n:0,last:0});
     store.set('streak',{n: st.last===OVER_NO-1 ? st.n+1 : (st.last===OVER_NO? st.n : 1), last:OVER_NO});
   }
   renderFT();
-};
+}
 
 const RANKS=[[30,'Hall of Famer','Frankly absurd range.'],[22,'Test regular','Proper cricket brain.'],[14,'IPL squad player','You know your game.'],[7,'Ranji grinder','Solid, if unspectacular.'],[0,'Gully cricket','More time in the nets needed.']];
 
@@ -935,6 +971,8 @@ $('playDaily').onclick=()=>start(OVER_NO);
 
 $('homeBtn').onclick=()=>{ clearInterval(window._cd); show('home'); renderHome(); };
 renderHome();
+// a tab left open overnight picks up the new over when it is looked at again
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && Math.max(1,dayNum())!==OVER_NO && !$('play').classList.contains('on')) location.reload(); });
 </script>
 </body>
 </html>
