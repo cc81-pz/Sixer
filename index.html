@@ -134,6 +134,23 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .wa{background:#25d366;color:#05300f;text-decoration:none;text-align:center}
 .next{text-align:center;color:var(--dim);font-size:14px;margin-top:16px}
 .next b{color:var(--ink);font-family:"IBM Plex Mono"}
+.signup .su-lead{font-size:15px;line-height:1.4;margin-bottom:10px}
+.su-row{display:flex;gap:8px}
+.su-row input{flex:1;min-width:0;background:var(--night2);border:1.5px solid var(--line);color:var(--ink);border-radius:12px;padding:13px 14px;font:500 17px "DM Sans",system-ui,sans-serif;outline:none}
+.su-row input:focus{border-color:var(--lime)}
+.su-row button{flex:none;padding:0 18px;border:0;border-radius:12px;background:var(--lime);color:#14200a;font:italic 900 19px "Barlow Condensed","Arial Narrow",Arial,sans-serif;text-transform:uppercase;cursor:pointer}
+.su-row button:disabled{opacity:.6}
+.su-tick{display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-size:13.5px;line-height:1.4;color:var(--ink);cursor:pointer}
+.su-tick input{flex:none;width:20px;height:20px;margin:0;accent-color:var(--lime)}
+.su-msg{font-size:13px;color:var(--dim);margin-top:8px}
+.su-msg:empty{display:none}
+.su-msg.bad{color:#ff7a7a}
+.su-foot{font-size:12px;color:var(--dim);margin-top:10px;display:flex;justify-content:space-between;gap:10px}
+.su-foot a{color:var(--dim);white-space:nowrap}
+.su-done{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--dim)}
+.su-done b{color:var(--lime);font:italic 900 22px "Barlow Condensed","Arial Narrow",Arial,sans-serif;text-transform:uppercase}
+.su-done #suDoneTo{color:var(--ink);font-weight:600;overflow-wrap:anywhere}
+[hidden]{display:none!important}
 .foot{text-align:center;color:#5d6699;font-size:11px;margin-top:26px;line-height:1.5}
 .crowd{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--dim)}
 .crowd b{color:var(--ink);font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-weight:600}
@@ -212,7 +229,7 @@ button,a.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
     </div>
     <p class="sub" id="archiveSub">Previous overs: catch up on the last week</p>
     <div id="archive" class="archive"></div>
-    <p class="foot">Friends &amp; family preview<br>Match data: <a href="https://cricsheet.org" target="_blank" rel="noopener" style="color:inherit">Cricsheet</a> · Names: Wikidata<br>We count plays anonymously to improve the game: a random ID in your browser, never your name or email.</p>
+    <p class="foot">Friends &amp; family preview<br>Match data: <a href="https://cricsheet.org" target="_blank" rel="noopener" style="color:inherit">Cricsheet</a> · Names: Wikidata<br>We count plays anonymously to improve the game: a random ID in your browser, never your name. If you sign up by email, it's used only to send you the game, never shared or sold, and you can unsubscribe at any time.</p>
   </section>
 
   <!-- PLAY -->
@@ -269,6 +286,20 @@ button,a.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
       </div>
       <div class="share-hint" id="shareHint"></div>
       <div class="share-pre" id="sharePre" style="margin:10px 0 0"></div>
+    </div>
+    <div class="card signup" id="signupCard" hidden>
+      <h3><span>Next over in your inbox</span><span>Optional</span></h3>
+      <form id="suForm" novalidate>
+        <p class="su-lead">Get each day's over by email. One a day, nothing else.</p>
+        <div class="su-row">
+          <input id="suEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="254" placeholder="you@example.com" aria-label="Email address" enterkeyhint="send">
+          <button type="submit" id="suGo">Sign up</button>
+        </div>
+        <label class="su-tick"><input type="checkbox" id="suConsent"><span>Email me the daily SIXER over. I can unsubscribe at any time.</span></label>
+        <div class="su-msg" id="suMsg" role="status" aria-live="polite"></div>
+        <div class="su-foot">Used only to send you the game. Never shared or sold. <a href="#" id="suNo">No thanks</a></div>
+      </form>
+      <div class="su-done" id="suDone" hidden><b>You're in ✓</b><span>The next over goes to</span><span id="suDoneTo"></span></div>
     </div>
     <div class="card table-ranks" id="ranksTable"><h3><span>The table</span><span>Runs</span></h3></div>
     <div class="next" id="nextInfo"></div>
@@ -11890,6 +11921,41 @@ const Track={
   }
 };
 
+/* Optional email card on the full-time screen. It sits below the share card, never blocks
+   anything, and once someone has signed up (or said no thanks) it gets out of the way.
+   Signups go to the signups table through signup(); the public key can't read them back. */
+const SIGNUP_CONSENT='Email me the daily SIXER over. I can unsubscribe at any time.';
+const Signup={
+  render(overNo){
+    const card=$('signupCard'); if(!card) return;
+    const done=store.get('signup',null), skip=store.get('signup-skip',0);
+    const hide=done || (skip && OVER_NO<skip+7);
+    card.hidden=!!hide; if(hide) return;
+    this.overNo=overNo; $('suForm').hidden=false; $('suDone').hidden=true; $('suMsg').textContent=''; $('suMsg').className='su-msg';
+    if(!this._seen){ this._seen=true; Track.event('signup_view',overNo); }
+  },
+  msg(t,bad){ const m=$('suMsg'); m.textContent=t; m.className='su-msg'+(bad?' bad':''); },
+  async submit(e){
+    e.preventDefault(); if(this._busy) return;
+    const em=$('suEmail').value.trim(), ok=/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em) && em.length<=254;
+    if(!ok){ this.msg('That email doesn\'t look right.',true); $('suEmail').focus(); return; }
+    if(!$('suConsent').checked){ this.msg('Tick the box so we can email you.',true); return; }
+    if(!Track.on){ this.msg('Preview copy: nothing was sent. On the live site this signs you up.'); return; }
+    this._busy=true; const btn=$('suGo'); btn.disabled=true; btn.textContent='…';
+    let res=null;
+    try{ const r=await fetch(`${SB_URL}/rest/v1/rpc/signup`,{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+           body:JSON.stringify({p_email:em,p_device:Track.id(),p_over:this.overNo??null,p_consent:true,p_consent_text:SIGNUP_CONSENT})});
+         res=r.ok?await r.json():null; }catch(err){ res=null; }
+    this._busy=false; btn.disabled=false; btn.textContent='Sign up';
+    if(res==='ok'){
+      store.set('signup',{at:Date.now()}); Track.event('signup',this.overNo);
+      $('suForm').hidden=true; $('suDone').hidden=false; $('suDoneTo').textContent=em.toLowerCase();
+    } else if(res==='invalid') this.msg('That email doesn\'t look right.',true);
+    else this.msg('Couldn\'t sign you up just now. Try again in a minute.',true);
+  },
+  skip(e){ e.preventDefault(); store.set('signup-skip',OVER_NO); $('signupCard').hidden=true; }
+};
+
 /* ============ CROWD DATA ============
    DUMMY NUMBERS until the backend exists. Everything the UI shows about other
    players comes through this one object, shaped like the tables it will read:
@@ -12297,10 +12363,13 @@ function renderFT(){
       $('nextInfo').innerHTML=`Next over in <b>${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}</b>`; };
     upd(); clearInterval(window._cd); window._cd=setInterval(upd,1000);
   } else { clearInterval(window._cd); $('nextInfo').textContent=`Catch-up over from ${dayDate(G.overNo)}.`; }
+  Signup.render(G.overNo);
 }
 
 $('playDaily').onclick=()=>start(OVER_NO);
 
+$('suForm').addEventListener('submit',e=>Signup.submit(e));
+$('suNo').addEventListener('click',e=>Signup.skip(e));
 $('homeBtn').onclick=()=>{ clearInterval(window._cd); show('home'); renderHome(); };
 renderHome();
 Track.event('visit',OVER_NO); Track.flush();
